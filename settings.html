@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: dark;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings - BillyCRM</title>
+<script src="assets/pendoSnippet.js"></script>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="settings">
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span class="brand-name">BillyCRM</span>
+    </div>
+    <a class="nav-item" data-page="dashboard" href="dashboard.html">Dashboard</a>
+    <a class="nav-item" data-page="contacts"  href="contacts.html">Contacts</a>
+    <a class="nav-item" data-page="tickets"   href="tickets.html">Tickets</a>
+    <a class="nav-item active" data-page="settings"  href="settings.html">Settings</a>
+  </aside>
+
+  <main class="content">
+
+    <div class="page-header">
+      <p class="page-title" id="page-title">Settings</p>
+      <div class="user-menu-container" id="user-menu-wrapper"></div>
+    </div>
+
+    <!-- Profile -->
+      <div class="settings-section">
+        <div class="settings-section-title">Profile</div>
+
+        <div class="form-field">
+          <label for="s-displayName">Display name</label>
+          <input id="s-displayName" type="text" autocomplete="off" />
+        </div>
+        <div class="form-field">
+          <label for="s-email">Email</label>
+          <input id="s-email" type="email" autocomplete="off" />
+        </div>
+        <div class="form-field">
+          <label for="s-role">Role</label>
+          <input id="s-role" type="text" autocomplete="off" />
+        </div>
+
+        <div class="settings-actions">
+          <span class="save-confirmation" id="profile-save-confirmation">Saved</span>
+          <button class="primary" id="save-profile-button">Save profile</button>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="settings-section">
+        <div class="settings-section-title">Notifications</div>
+
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <div class="settings-row-label">New ticket assigned to me</div>
+            <div class="settings-row-hint">Get notified the moment a ticket is routed to you</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="s-newTicket" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <div class="settings-row-label">Customer replies</div>
+            <div class="settings-row-hint">When a customer responds on a ticket you own</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="s-replies" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <div class="settings-row-label">Status changes</div>
+            <div class="settings-row-hint">When a contact or ticket status changes</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="s-statusChanges" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <div class="settings-row-label">Weekly digest</div>
+            <div class="settings-row-hint">Monday morning summary of last week's activity</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="s-weeklyDigest" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="settings-actions">
+          <span class="save-confirmation" id="notifications-save-confirmation">Saved</span>
+          <button class="primary" id="save-notifications-button">Save notifications</button>
+        </div>
+      </div>
+
+      <!-- Display (informational) -->
+      <div class="settings-section">
+        <div class="settings-section-title">Display</div>
+
+        <div class="settings-row">
+          <div class="settings-row-text">
+            <div class="settings-row-label">Theme</div>
+            <div class="settings-row-hint">Light mode coming soon</div>
+          </div>
+          <div class="theme-options">
+            <label><input type="radio" name="theme" value="dark" checked /> Dark</label>
+            <label class="disabled"><input type="radio" name="theme" value="light" disabled /> Light</label>
+          </div>
+        </div>
+      </div>
+    
+  </main>
+</div>
+
+<!-- SIGN-IN MODAL -->
+<div class="modal-backdrop" id="signin-modal" hidden>
+  <form class="modal" id="signin-form">
+    <h3 class="modal-title">Sign in</h3>
+    <p style="margin: 0 0 14px; font-size: 12px; color: var(--text-secondary);">
+      Identifies you in BillyCRM and (when Pendo is installed) flows through to <code style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">pendo.identify()</code>.
+    </p>
+
+    <div class="form-field form-field-required">
+      <label for="si-visitor-id">Visitor ID</label>
+      <input id="si-visitor-id" name="visitorId" type="text" required autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-name">Visitor name <span class="optional">(optional)</span></label>
+      <input id="si-visitor-name" name="visitorName" type="text" autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-email">Visitor email <span class="optional">(optional)</span></label>
+      <input id="si-visitor-email" name="visitorEmail" type="email" autocomplete="off" />
+    </div>
+    <div class="form-field form-field-required">
+      <label for="si-account-id">Account ID</label>
+      <input id="si-account-id" name="accountId" type="text" required autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-account-name">Account name <span class="optional">(optional)</span></label>
+      <input id="si-account-name" name="accountName" type="text" autocomplete="off" />
+    </div>
+
+    <div class="modal-buttons">
+      <button type="button" class="secondary" id="cancel-signin">Cancel</button>
+      <button type="submit" class="primary">Sign in</button>
+    </div>
+  </form>
+</div>
+
+<script src="assets/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: dark;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ticket Details - BillyCRM</title>
+<script src="assets/pendoSnippet.js"></script>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="ticket-detail">
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span class="brand-name">BillyCRM</span>
+    </div>
+    <a class="nav-item" data-page="dashboard" href="dashboard.html">Dashboard</a>
+    <a class="nav-item" data-page="contacts"  href="contacts.html">Contacts</a>
+    <a class="nav-item active" data-page="tickets"   href="tickets.html">Tickets</a>
+    <a class="nav-item" data-page="settings"  href="settings.html">Settings</a>
+  </aside>
+
+  <main class="content">
+
+    <div class="page-header">
+      <p class="page-title" id="page-title">Tickets</p>
+      <div class="user-menu-container" id="user-menu-wrapper"></div>
+    </div>
+
+    <div id="ticket-detail-content"></div>
+    
+  </main>
+</div>
+
+<!-- TICKET FORM MODAL -->
+<div class="modal-backdrop" id="ticket-modal" hidden>
+  <form class="modal" id="ticket-form">
+    <h3 class="modal-title" id="ticket-modal-title">New ticket</h3>
+
+    <div class="form-field form-field-required">
+      <label for="tf-subject">Subject</label>
+      <input id="tf-subject" name="subject" type="text" required autocomplete="off" />
+    </div>
+    <div class="form-field form-field-required">
+      <label for="tf-customer">Customer</label>
+      <select id="tf-customer" name="customerId" required></select>
+    </div>
+    <div class="form-field form-field-required">
+      <label for="tf-priority">Priority</label>
+      <select id="tf-priority" name="priority" required>
+        <option value="high">High</option>
+        <option value="medium" selected>Medium</option>
+        <option value="low">Low</option>
+      </select>
+    </div>
+    <div class="form-field form-field-required">
+      <label for="tf-status">Status</label>
+      <select id="tf-status" name="status" required>
+        <option value="open">Open</option>
+        <option value="in-progress">In progress</option>
+        <option value="pending">Pending</option>
+        <option value="closed">Closed</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="tf-assignee">Assignee <span class="optional">(optional)</span></label>
+      <input id="tf-assignee" name="assignee" type="text" autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="tf-description">Description <span class="optional">(optional)</span></label>
+      <textarea id="tf-description" name="description"></textarea>
+    </div>
+
+    <div class="modal-buttons">
+      <button type="button" class="secondary" id="cancel-ticket">Cancel</button>
+      <button type="submit" class="primary" id="save-ticket">Save ticket</button>
+    </div>
+  </form>
+</div>
+
+<!-- SIGN-IN MODAL -->
+<div class="modal-backdrop" id="signin-modal" hidden>
+  <form class="modal" id="signin-form">
+    <h3 class="modal-title">Sign in</h3>
+    <p style="margin: 0 0 14px; font-size: 12px; color: var(--text-secondary);">
+      Identifies you in BillyCRM and (when Pendo is installed) flows through to <code style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">pendo.identify()</code>.
+    </p>
+
+    <div class="form-field form-field-required">
+      <label for="si-visitor-id">Visitor ID</label>
+      <input id="si-visitor-id" name="visitorId" type="text" required autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-name">Visitor name <span class="optional">(optional)</span></label>
+      <input id="si-visitor-name" name="visitorName" type="text" autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-email">Visitor email <span class="optional">(optional)</span></label>
+      <input id="si-visitor-email" name="visitorEmail" type="email" autocomplete="off" />
+    </div>
+    <div class="form-field form-field-required">
+      <label for="si-account-id">Account ID</label>
+      <input id="si-account-id" name="accountId" type="text" required autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-account-name">Account name <span class="optional">(optional)</span></label>
+      <input id="si-account-name" name="accountName" type="text" autocomplete="off" />
+    </div>
+
+    <div class="modal-buttons">
+      <button type="button" class="secondary" id="cancel-signin">Cancel</button>
+      <button type="submit" class="primary">Sign in</button>
+    </div>
+  </form>
+</div>
+
+<script src="assets/app.js"></script>
+
+</body>
+</html>

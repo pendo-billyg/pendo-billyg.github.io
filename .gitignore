@@ -1,0 +1,10 @@
+# macOS metadata
+.DS_Store
+
+# Editor / OS junk
+*.swp
+*.swo
+Thumbs.db
+
+# Local scratch
+test.txt
