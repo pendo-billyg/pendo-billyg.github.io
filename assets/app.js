@@ -58,10 +58,6 @@ const getTicket  = id => tickets.find(t => t.id === id);
 
 // ---------- AUTH (persisted in localStorage) ----------
 const AUTH_KEY = 'billycrm-auth';
-const DEFAULT_AUTH = {
-  visitor: { id: 'billy-grey', name: 'Billy Grey', email: 'billy.grey@pendo.io' },
-  account: { id: 'pendo',      name: 'Pendo Inc.' }
-};
 
 function getAuth() {
   try {
@@ -75,9 +71,6 @@ function setAuth(auth) {
 function clearAuth() {
   try { localStorage.removeItem(AUTH_KEY); } catch (e) {}
 }
-
-// First run on this browser: seed default auth so we land as Billy / Pendo
-if (getAuth() === null) setAuth(DEFAULT_AUTH);
 
 // ---------- USER MENU (top-right, on every page) ----------
 function renderUserMenu() {
