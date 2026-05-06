@@ -31,13 +31,25 @@
 
     <div class="page-toolbar">
     <input class="search-input" id="search-input" type="text" placeholder="Search by name, email, or company..." />
-    <select class="filter-select" id="status-filter">
-        <option value="all">All statuses</option>
-        <option value="active">Active</option>
-        <option value="pending">Pending</option>
-        <option value="inactive">Inactive</option>
-    </select>
-    <button class="primary icon-button" id="add-contact-button" title="Add contact" aria-label="Add contact">+</button>
+      <select class="filter-select" id="status-filter">
+          <option value="all">All statuses</option>
+          <option value="active">Active</option>
+          <option value="pending">Pending</option>
+          <option value="inactive">Inactive</option>
+      </select>
+      <button class="primary icon-button" id="add-contact-button" title="Add contact" aria-label="Add contact">+</button>
+      
+      <div class="actions-menu-container">
+        <button class="secondary icon-button actions-trigger"
+              id="contacts-actions-trigger"
+              title="More actions"
+              aria-label="More actions"
+              aria-haspopup="true">⋯</button>
+        <div class="actions-dropdown" id="contacts-actions-dropdown" hidden>
+          <button class="actions-item" id="contacts-export-csv">Export to CSV</button>
+          <button class="actions-item" id="contacts-generate-report">Generate engagement report</button>
+        </div>
+      </div>
     </div>
 
     <div class="contacts-table">
@@ -135,6 +147,8 @@
 </div>
 
 <script src="assets/app.js"></script>
+
+<div class="toast-container" id="toast-container"></div>
 
 </body>
 </html>

@@ -632,3 +632,95 @@ button.secondary:hover { color: var(--text-primary); background: var(--bg-box-ho
 .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 
 [hidden] { display: none !important; }
+
+/* ---------- Actions dropdown (Contacts / Tickets toolbar) ---------- */
+.actions-menu-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.actions-trigger {
+  /* matches the existing .icon-button (38px square) */
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.actions-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-box);
+  border: 1px solid var(--border-box);
+  border-radius: 10px;
+  padding: 6px;
+  min-width: 240px;
+  z-index: 50;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.actions-item {
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.actions-item:hover {
+  background: var(--bg-box-hover);
+}
+
+.actions-item[data-busy="true"] {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+/* ---------- Toast (bottom-right) ---------- */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.toast {
+  background: var(--bg-box);
+  border: 1px solid var(--border-box);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text-primary);
+  font-size: 13px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  min-width: 220px;
+  max-width: 360px;
+  opacity: 0;
+  transform: translateX(20px);
+  animation: toast-in 0.2s ease forwards;
+}
+
+.toast.fade-out {
+  animation: toast-out 0.4s ease forwards;
+}
+
+@keyframes toast-in {
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toast-out {
+  to { opacity: 0; transform: translateX(20px); }
+}

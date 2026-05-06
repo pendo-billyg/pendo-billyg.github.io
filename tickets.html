@@ -47,6 +47,18 @@
         <button class="primary icon-button" id="add-ticket-button" title="New ticket" aria-label="New ticket">+</button>
     </div>
 
+    <div class="actions-menu-container">
+      <button class="secondary icon-button actions-trigger"
+          id="tickets-actions-trigger"
+          title="More actions"
+          aria-label="More actions"
+          aria-haspopup="true">⋯</button>
+      <div class="actions-dropdown" id="tickets-actions-dropdown" hidden>
+        <button class="actions-item" id="tickets-export-csv">Export to CSV</button>
+        <button class="actions-item" id="tickets-generate-summary">Generate weekly summary</button>
+      </div>
+    </div>
+
     <div class="ticket-list" id="tickets-list"></div>
     
   </main>
@@ -135,6 +147,8 @@
 </div>
 
 <script src="assets/app.js"></script>
+
+<div class="toast-container" id="toast-container"></div>
 
 </body>
 </html>

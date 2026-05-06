@@ -20,6 +20,91 @@ function makeIdFromName(name) {
   return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
+// ---------- CSV EXPORT ----------
+function escapeCsvCell(value) {
+  const s = String(value == null ? '' : value);
+  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function downloadCsv(filename, headers, rows) {
+  const lines = [headers.map(escapeCsvCell).join(',')];
+  for (const row of rows) lines.push(row.map(escapeCsvCell).join(','));
+  const csv = lines.join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function todayStamp() {
+  // hardcoded so behavior is deterministic in this sandbox
+  return '2026-04-29';
+}
+
+// ---------- TOAST ----------
+function showToast(message) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => toast.classList.add('fade-out'), 2200);
+  setTimeout(() => toast.remove(), 2700);
+}
+
+// ---------- ACTIONS DROPDOWN ----------
+function wireActionsDropdown(triggerId, dropdownId) {
+  const trigger  = document.getElementById(triggerId);
+  const dropdown = document.getElementById(dropdownId);
+  if (!trigger || !dropdown) return;
+
+  trigger.addEventListener('click', e => {
+    e.stopPropagation();
+    dropdown.hidden = !dropdown.hidden;
+  });
+
+  // Close when clicking outside the dropdown / trigger
+  document.addEventListener('click', e => {
+    if (dropdown.hidden) return;
+    if (e.target.closest('.actions-menu-container')) return;
+    dropdown.hidden = true;
+  });
+}
+
+// ---------- SIMULATED ACTION (loading -> success toast) ----------
+function runSimulatedAction(button, computeSuccessMessage) {
+  if (button.dataset.busy === 'true') return;
+  button.dataset.busy = 'true';
+  const originalText = button.textContent;
+  button.textContent = 'Working...';
+
+  setTimeout(() => {
+    button.textContent = originalText;
+    button.dataset.busy = 'false';
+
+    // Close the dropdown the button lives inside, if any
+    const dropdown = button.closest('.actions-dropdown');
+    if (dropdown) dropdown.hidden = true;
+
+    showToast(computeSuccessMessage());
+  }, 1500);
+}
+
 // ---------- DATA (in-memory; resets on page reload) ----------
 const SEED_CONTACTS = [
   { id:'maya-rodriguez',   initials:'MR', name:'Maya Rodriguez',   email:'maya.r@acmecorp.io',       company:'Acme Corp',         status:'active',   role:'VP Engineering',        lastContacted:'2026-04-25', owner:'Billy Grey' },
@@ -610,6 +695,23 @@ function initContactsList() {
   document.getElementById('add-contact-button')?.addEventListener('click', openAddContactModal);
 
   render();
+  
+  wireActionsDropdown('contacts-actions-trigger', 'contacts-actions-dropdown');
+
+  document.getElementById('contacts-export-csv')?.addEventListener('click', () => {
+    const headers = ['id', 'name', 'email', 'company', 'status', 'role', 'lastContacted', 'owner'];
+    const rows = contacts.map(c => [c.id, c.name, c.email, c.company, c.status, c.role, c.lastContacted, c.owner]);
+    downloadCsv(`contacts-${todayStamp()}.csv`, headers, rows);
+    document.getElementById('contacts-actions-dropdown').hidden = true;
+    showToast(`Exported ${contacts.length} contacts`);
+  });
+
+  document.getElementById('contacts-generate-report')?.addEventListener('click', e => {
+    runSimulatedAction(e.target, () => {
+      const activeCount = contacts.filter(c => c.status === 'active').length;
+      return `Engagement report generated for ${activeCount} active contacts`;
+    });
+  });
 }
 
 function initContactDetail() {
@@ -658,6 +760,33 @@ function initTicketsList() {
   });
 
   render();
+
+  wireActionsDropdown('tickets-actions-trigger', 'tickets-actions-dropdown');
+
+  document.getElementById('tickets-export-csv')?.addEventListener('click', () => {
+    const headers = ['id', 'subject', 'customer', 'priority', 'status', 'assignee', 'created', 'updated'];
+    const rows = tickets.map(t => {
+      const c = getContact(t.customerId);
+      const customer = c ? c.name : '';
+      return [t.id, t.subject, customer, t.priority, t.status, t.assignee, t.created, t.updated];
+    });
+    downloadCsv(`tickets-${todayStamp()}.csv`, headers, rows);
+    document.getElementById('tickets-actions-dropdown').hidden = true;
+    showToast(`Exported ${tickets.length} tickets`);
+  });
+
+  document.getElementById('tickets-generate-summary')?.addEventListener('click', e => {
+    runSimulatedAction(e.target, () => {
+      const open = tickets.filter(t => t.status === 'open').length;
+      const today = new Date('2026-04-28');
+      const weekAgo = new Date(today);
+      weekAgo.setDate(today.getDate() - 7);
+      const closedThisWeek = tickets.filter(t =>
+        t.status === 'closed' && new Date(t.updated) >= weekAgo
+      ).length;
+      return `Weekly summary generated — ${open} open, ${closedThisWeek} closed this week`;
+    });
+  });
 }
 
 function initTicketDetail() {
