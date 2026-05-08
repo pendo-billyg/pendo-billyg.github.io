@@ -795,12 +795,13 @@ function initTicketDetail() {
 }
 
 function initSettings() {
-  // In-memory only (per the auth-only-persistence decision)
+  const auth = getAuth();
+  
   const settings = {
     profile: {
-      displayName: 'Billy Grey',
-      email:       'billy.grey@pendo.io',
-      role:        'Technical Support Engineer'
+      displayName: auth?.visitor?.name  || '',
+      email:       auth?.visitor?.email || '',
+      role:        ''   // not in the auth model
     },
     notifications: {
       newTicketAssigned: true,
