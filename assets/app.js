@@ -392,14 +392,6 @@ function renderHelpLauncher() {
   button.title = 'Help & resources';
   button.setAttribute('aria-label', 'Help & resources');
 
-  button.addEventListener('click', () => {
-    if (window.pendo && pendo.showResourceCenter) {
-      pendo.showResourceCenter();
-    } else {
-      showToast('Resource center coming soon');
-    }
-  });
-
   document.body.appendChild(button);
 }
 
