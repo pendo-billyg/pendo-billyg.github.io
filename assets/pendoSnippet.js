@@ -29,12 +29,12 @@ const PENDO_API_KEY = '4298b339-33d2-49e7-87e6-dcd5b240f48c';
     const account = auth.account || {};
     pendo.initialize({
         visitor: {
-            id: visitor.id || 'visitor-anonymous',
+            id: visitor.id || '',
             email: visitor.email || '',
             full_name: visitor.name || ''
         },
         account: {
-            id: account.id || 'billycrm-sandbox',
+            id: account.id || '',
             name: account.name || ''
         }
     });

@@ -196,6 +196,9 @@ function renderUserMenu() {
     });
     document.getElementById('sign-out-button').addEventListener('click', () => {
       clearAuth();
+      if (window.pendo && typeof pendo.identify === 'function') {
+        pendo.identify({ visitor: { id: '' }, account: { id: '' } });
+      }
       renderUserMenu();
     });
   } else {
@@ -554,6 +557,20 @@ function wireSharedUI() {
         name: (data.get('accountName') || '').trim()
       }
     });
+
+    if (window.pendo && typeof pendo.identify === 'function') {
+      pendo.identify({
+        visitor: {
+          id:        visitorId,
+          email:     (data.get('visitorEmail') || '').trim(),
+          full_name: (data.get('visitorName')  || '').trim()
+        },
+        account: {
+          id:   accountId,
+          name: (data.get('accountName') || '').trim()
+        }
+      });
+    }
 
     closeSignInModal();
     renderUserMenu();
