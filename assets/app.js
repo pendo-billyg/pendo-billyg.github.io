@@ -41,6 +41,13 @@ function downloadCsv(filename, headers, rows) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+
+  return {
+    success: true
+    bytes: blob.size
+    rowCount: rows.length
+    filename
+  };
 }
 
 function todayStamp() {
@@ -730,9 +737,20 @@ function initContactsList() {
   document.getElementById('contacts-export-csv')?.addEventListener('click', () => {
     const headers = ['id', 'name', 'email', 'company', 'status', 'role', 'lastContacted', 'owner'];
     const rows = contacts.map(c => [c.id, c.name, c.email, c.company, c.status, c.role, c.lastContacted, c.owner]);
-    downloadCsv(`contacts-${todayStamp()}.csv`, headers, rows);
+    const result = downloadCsv(`contacts-${todayStamp()}.csv`, headers, rows);
+
+    if (window.pendo && typeof pendo.track === 'function') {
+      pendo.track('csv_export', {
+        type: 'contacts',
+        row_count: result.rowCount,
+        file_size_bytes: result.bytes,
+        filename: result.filename,
+        success: result.success
+      });
+    }
+
     document.getElementById('contacts-actions-dropdown').hidden = true;
-    showToast(`Exported ${contacts.length} contacts`);
+    showToast(`Exported ${result.rowCount} contacts`);
   });
 
   document.getElementById('contacts-generate-report')?.addEventListener('click', e => {
