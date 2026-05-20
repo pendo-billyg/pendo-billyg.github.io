@@ -43,9 +43,9 @@ function downloadCsv(filename, headers, rows) {
   URL.revokeObjectURL(url);
 
   return {
-    success: true
-    bytes: blob.size
-    rowCount: rows.length
+    success: true,
+    bytes: blob.size,
+    rowCount: rows.length,
     filename
   };
 }
