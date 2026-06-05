@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pendo Aggregations → SQL Cheat Sheet</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f8fa;
+  --panel: #ffffff;
+  --border: #d8dee4;
+  --text: #1f2328;
+  --muted: #656d76;
+  --accent: #6f42c1;
+  --accent-soft: #f3eefb;
+  --sql: #0969da;
+  --sql-soft: #ddf4ff;
+  --code-bg: #0d1117;
+  --code-text: #e6edf3;
+  --c-key: #79c0ff;
+  --c-str: #a5d6ff;
+  --c-num: #79c0ff;
+  --c-punc: #8b949e;
+  --c-comment: #8b949e;
+  --c-func: #d2a8ff;
+  --c-bool: #ff7b72;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+.wrap { display: grid; grid-template-columns: 200px minmax(0, 1fr); }
+nav {
+  position: sticky; top: 0; align-self: start; height: 100vh; overflow-y: auto;
+  padding: 20px 12px; border-right: 1px solid var(--border); background: var(--panel);
+}
+nav h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 0 6px; }
+nav h2:first-child { margin-top: 0; }
+nav a { display: block; color: var(--text); text-decoration: none; padding: 4px 8px; border-radius: 6px; font-size: 13px; }
+nav a:hover { background: var(--accent-soft); color: var(--accent); }
+main { padding: 28px 30px 80px; min-width: 0; max-width: 1100px; }
+header.hero { margin-bottom: 18px; }
+header.hero h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: -.01em; }
+header.hero p { color: var(--muted); margin: 4px 0; max-width: 760px; }
+.badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; vertical-align: middle; }
+.badge.pendo { background: var(--accent-soft); color: var(--accent); }
+.badge.sql { background: var(--sql-soft); color: var(--sql); }
+.endpoints { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.ep { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12.5px; }
+.ep code { font-family: "SF Mono", Menlo, Consolas, monospace; background: #eef1f4; padding: 2px 7px; border-radius: 6px; color: #393f46; font-size: 12px; }
+.ep-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; }
+.ep-tag.ext { background: #e1f5ee; color: #0f6e56; }
+.ep-tag.int { background: #faecd9; color: #8a5500; }
+.ep-auth { color: var(--muted); font-size: 12px; }
+section { margin: 38px 0; scroll-margin-top: 16px; }
+section > h2 { font-size: 21px; margin: 0 0 4px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+section > p.lead { color: var(--muted); margin: 8px 0 18px; max-width: 820px; }
+h3.op { font-size: 16px; margin: 0; font-family: "SF Mono", Menlo, Consolas, monospace; }
+h4.cat { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 22px 0 8px; }
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin: 14px 0; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.card .head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.card .when { color: var(--muted); font-size: 13px; margin: 2px 0 12px; }
+.cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+@media (max-width: 480px) { .wrap { grid-template-columns: 1fr; } nav { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); } }
+.codecol { min-width: 0; }
+.codecol .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 5px; }
+.codecol .label.pendo { color: var(--accent); }
+.codecol .label.sql { color: var(--sql); }
+pre { margin: 0; background: var(--code-bg); color: var(--code-text); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font: 12.5px/1.5 "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; border: 1px solid #1f2630; }
+pre code { white-space: pre; }
+.t-key { color: var(--c-key); }
+.t-str { color: var(--c-str); }
+.t-num { color: var(--c-num); }
+.t-punc { color: var(--c-punc); }
+.t-bool { color: var(--c-bool); }
+.t-func { color: var(--c-func); }
+.t-comment { color: var(--c-comment); font-style: italic; }
+table.ref { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 6px; }
+table.ref th, table.ref td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 13.5px; }
+table.ref th { background: #f0f3f6; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+table.ref tr:last-child td { border-bottom: none; }
+table.ref code, p code, li code, .when code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; background: #eef1f4; padding: 1px 5px; border-radius: 5px; color: #393f46; }
+table.ref td code.pendo { background: var(--accent-soft); color: var(--accent); }
+table.ref td code.sql { background: var(--sql-soft); color: var(--sql); }
+.note { background: #fff8e6; border: 1px solid #f1d98a; border-radius: 8px; padding: 12px 14px; margin: 14px 0; font-size: 13.5px; }
+.note b { color: #7a5b00; }
+.gotcha { background: #fdf0ef; border: 1px solid #f3b6b0; border-radius: 8px; padding: 12px 14px; margin: 10px 0; font-size: 13.5px; }
+.gotcha b { color: #b3261e; }
+footer { color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); padding-top: 16px; margin-top: 40px; }
+footer a { color: var(--accent); }
+footer ul { margin: 6px 0 0; padding-left: 18px; }
+.flow { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:6px 0 2px; font-size:13px; }
+.flow .step { background:var(--accent-soft); color:var(--accent); border-radius:6px; padding:3px 9px; font-family:"SF Mono",monospace; font-size:12px; }
+.flow .arrow { color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <h2>Start here</h2>
+  <a href="#model">Mental model</a>
+  <a href="#anatomy">Query anatomy</a>
+  <h2>Reference</h2>
+  <a href="#sources">Sources (tables)</a>
+  <a href="#operators">Operators</a>
+  <a href="#aggregators">Aggregators</a>
+  <a href="#functions">Expression functions</a>
+  <h2>Put it together</h2>
+  <a href="#examples">Worked examples</a>
+  <a href="#gotchas">Final clarifications</a>
+</nav>
+
+<main>
+<header class="hero">
+  <h1>Pendo Aggregations → SQL</h1>
+  <p>A cheat sheet for translating Pendo's JSON aggregation pipeline into the SQL you already know.
+  Left column is <span class="badge pendo">Pendo agg</span>, right column is the <span class="badge sql">SQL equivalent</span>.</p>
+  <div class="endpoints">
+    <div class="ep"><span class="ep-tag ext">External</span> <code>POST https://app.pendo.io/api/v1/aggregation</code> <span class="ep-auth">auth: <code>X-Pendo-Integration-Key</code> header</span></div>
+    <div class="ep"><span class="ep-tag int">Internal</span> <code>POST https://app.pendo.io/api/aggregation/s/:subID?all=true</code> <span class="ep-auth">auth: session cookie &mdash; no auth header (<code>:subID</code> = subscription ID)</span></div>
+  </div>
+</header>
+
+
+<section id="model">
+  <h2>The mental model</h2>
+  <p class="lead">A Pendo aggregation is a <b>pipeline</b>: an ordered list of steps. Each step takes rows in and emits zero or more rows out &mdash; the output of one step is the input to the next. That's the key difference from SQL: instead of one declarative statement the optimizer reorders, you write the stages yourself, top to bottom, like a chain of CTEs.</p>
+  <div class="flow">
+    <span class="step">source</span><span class="arrow">&rarr;</span>
+    <span class="step">filter</span><span class="arrow">&rarr;</span>
+    <span class="step">group</span><span class="arrow">&rarr;</span>
+    <span class="step">eval</span><span class="arrow">&rarr;</span>
+    <span class="step">sort</span><span class="arrow">&rarr;</span>
+    <span class="step">limit</span>
+    <span class="arrow">&asymp;</span>
+    <span class="step" style="background:var(--sql-soft);color:var(--sql)">FROM &rarr; WHERE &rarr; GROUP BY &rarr; SELECT &rarr; ORDER BY &rarr; LIMIT</span>
+  </div>
+  <div class="note"><b>Big idea:</b> SQL is declarative (say <i>what</i> you want, engine picks the order). Pendo aggs are imperative (you list the steps <i>in execution order</i>). The vocabulary maps almost 1:1 &mdash; you're mostly just re-sequencing what you already know.</div>
+</section>
+
+<section id="anatomy">
+  <h2>Query anatomy</h2>
+  <p class="lead">Every request wraps a <code>pipeline</code> array. The first step is always a <code>source</code> (your <code>FROM</code>), optionally scoped in time by <code>timeSeries</code> (your date <code>WHERE</code>).</p>
+  <div class="card">
+    <div class="head"><span class="when" style="margin:0">timeSeries now uses <code>now()</code> / <code>-30</code></span></div>
+    <div class="cols">
+      <div class="codecol">
+        <p class="label pendo">Pendo aggregation</p>
+        <pre><code class="lang-json">{
+  "response": { "mimeType": "application/json" },
+  "request": {
+    "requestId": "active-visitors",
+    "pipeline": [
+      { "source": { "events": null },
+        "timeSeries": {
+          "period": "dayRange",
+          "first": "now()",
+          "count": -30
+        } },
+      { "identified": "visitorId" },
+      { "group": {
+          "group": ["visitorId"],
+          "fields": [ { "minutes": { "sum": "numMinutes" } } ]
+      } },
+      { "sort": ["-minutes"] },
+      { "limit": 10 }
+    ]
+  }
+}</code></pre>
+      </div>
+      <div class="codecol">
+        <p class="label sql">SQL equivalent</p>
+        <pre><code class="lang-sql">SELECT visitorId,
+       SUM(numMinutes) AS minutes
+FROM events
+WHERE day &gt;= NOW() - INTERVAL '30 days'  -- first=now(), count=-30
+  AND visitorId NOT LIKE '\_PENDO%'        -- identified
+GROUP BY visitorId
+ORDER BY minutes DESC                      -- "-minutes"
+LIMIT 10;</code></pre>
+      </div>
+    </div>
+    <p class="when" style="margin-top:12px"><b>Read it as:</b> <code>requestId</code> = a query name/label &middot; <code>pipeline</code> = the query body &middot; <code>timeSeries</code> rides along with the source and is your mandatory date filter for event sources.</p>
+  </div>
+  <table class="ref">
+    <tr><th>Pendo concept</th><th>SQL concept</th><th>Notes</th></tr>
+    <tr><td><code class="pendo">pipeline</code></td><td><code class="sql">the whole query / chain of CTEs</code></td><td>Ordered, top-to-bottom execution.</td></tr>
+    <tr><td><code class="pendo">source</code></td><td><code class="sql">FROM</code></td><td>Must be the first step (unless using <code>spawn</code>).</td></tr>
+    <tr><td><code class="pendo">timeSeries</code></td><td><code class="sql">WHERE ts BETWEEN &hellip;</code></td><td><code>period</code> = <code>dayRange</code>/<code>hourRange</code>; <code>first</code> = epoch (in ms); <code>count</code> = number of periods (negative counts backward from <code>first</code>).</td></tr>
+    <tr><td>a <code class="pendo">row</code></td><td>a <code class="sql">row / result record</code></td><td>The unit of data flowing through the pipeline. The source emits rows (one per visitor, one per day-bucket, one per event&hellip; depending on the source); each step transforms them; the API hands them back in a <code>results</code> array. It's the same idea as a SQL row &mdash; it just isn't visible in the request JSON because the rows are produced <i>by</i> the source at runtime.</td></tr>
+    <tr><td><code class="pendo">appId</code> in source</td><td><code class="sql">WHERE app_id = &hellip;</code></td><td>Scopes a multi-app subscription to one app; <code>null</code> = all apps. Can also take a list of app IDs.</td></tr>
+  </table>
+</section>
+
+<section id="sources">
+  <h2>Sources = tables </h2>
+  <p class="lead">Sources are what you <code>FROM</code>. There's no fixed SQL table to map each one to &mdash; instead, here's the catalogue from the internal <i>Aggregation Sources</i> wiki, grouped by kind. Entity sources are time-insensitive; event sources require a <code>timeSeries</code>.</p>
+
+  <h4 class="cat">Entities (one row per object, current metadata)</h4>
+  <table class="ref">
+    <tr><th>Source</th><th>What a row is</th></tr>
+    <tr><td><code class="pendo">visitors</code></td><td>One row per visitor in the subscription, for all time, with current metadata. By default returns both identified and anonymous visitors &mdash; use the <code>identified</code> operator to filter.</td></tr>
+    <tr><td><code class="pendo">accounts</code></td><td>One row per account, with current metadata.</td></tr>
+    <tr><td><code class="pendo">doNotProcessVisitors</code> / <code class="pendo">doNotProcessAccounts</code></td><td>Variants of <code>visitors</code>/<code>accounts</code> that return <i>only</i> records flagged <code>doNotProcess</code> (part of Pendo's GDPR delete flow).</td></tr>
+    <tr><td><code class="pendo">pages</code></td><td>One row per tagged Page &mdash; an individual screen of the app.</td></tr>
+    <tr><td><code class="pendo">features</code></td><td>One row per Feature &mdash; an interactable element (buttons, toggles, etc.).</td></tr>
+    <tr><td><code class="pendo">trackTypes</code></td><td>One row per Track Type &mdash; deeper, behind-the-scenes tracked events (e.g. time-to-load). Pages/features/trackTypes all derive from the generic &ldquo;countable&rdquo; type.</td></tr>
+    <tr><td><code class="pendo">guides</code> / <code class="pendo">apps</code></td><td>One row per guide (in-app message) / per app in the subscription.</td></tr>
+  </table>
+
+  <h4 class="cat">Pre-aggregated event sources (&ldquo;baserow&rdquo;) &mdash; need a timeSeries</h4>
+  <table class="ref">
+    <tr><th>Source</th><th>What a row is</th></tr>
+    <tr><td><code class="pendo">events</code></td><td>Overall activity, bucketed per visitor/account over time and baked down into <code>numEvents</code> + <code>numMinutes</code>. A summary row, not a raw event. Best for activity-over-time analytics.</td></tr>
+    <tr><td><code class="pendo">pageEvents</code></td><td>Same shape as <code>events</code>, but activity on a particular Page (or all activity broken down by Page). Pass <code>{"pageId": &hellip;}</code> to scope.</td></tr>
+    <tr><td><code class="pendo">featureEvents</code></td><td>Same as <code>pageEvents</code>, but for a Feature.</td></tr>
+    <tr><td><code class="pendo">trackEvents</code></td><td>Same as above, for Track Events. <b>Pre-aggregated</b> &mdash; multiple track events may roll into a single row. For individual track events, use <code>singleEvents</code>.</td></tr>
+  </table>
+
+  <h4 class="cat">Per-event sources (one row per raw event) &mdash; heavy; need a timeSeries</h4>
+  <table class="ref">
+    <tr><th>Source</th><th>What a row is</th></tr>
+    <tr><td><code class="pendo">singleEvents</code></td><td>One row per individual event, lightly processed for readability. This is the per-event source actually used in the app. Massive &mdash; use small date ranges and a <code>limit</code>; even a couple of hours can be a lot of data. Not documented to customers; throttled on APIv1.</td></tr>
+    <tr><td><code class="pendo">rawEvents</code></td><td>The most unfiltered events received &mdash; debugging only, not used in the app (large, slow, not analytics-friendly). Same granularity as <code>singleEvents</code> but worse-formatted. <b>Prefer <code>singleEvents</code>.</b> Not documented to customers; heavily throttled and may be blocked &mdash; don't suggest it to customers.</td></tr>
+    <tr><td><code class="pendo">guideEvents</code></td><td><code>singleEvents</code> pre-filtered to guide-type events (<code>guideSeen</code>/<code>guideAdvanced</code>/<code>guideDismissed</code>). Treated as lighter-weight than <code>singleEvents</code>.</td></tr>
+    <tr><td><code class="pendo">pollEvents</code></td><td><code>singleEvents</code> pre-filtered to poll-type events. One row per poll response.</td></tr>
+  </table>
+
+  <h4 class="cat">Summary &amp; utility sources</h4>
+  <table class="ref">
+    <tr><th>Source</th><th>What a row is</th></tr>
+    <tr><td><code class="pendo">timespan</code></td><td>Which days a visitor (in an account) did something in the app. Maps ~1:1 to the <code>events</code>/<code>pageEvents</code>/<code>featureEvents</code>/<code>trackEvents</code> sources.</td></tr>
+    <tr><td><code class="pendo">guidesSeen</code> / <code class="pendo">pollsSeen</code></td><td>Visitors that <i>last</i> saw a given guide/poll within the <code>timeSeries</code>. <b>Require a timeSeries.</b></td></tr>
+    <tr><td><code class="pendo">guidesSeenEver</code> / <code class="pendo">pollsSeenEver</code></td><td>Visitors that have <i>ever</i> seen a given guide/poll. Time-insensitive &mdash; no <code>timeSeries</code> needed.</td></tr>
+    <tr><td><code class="pendo">const</code></td><td>Emits a supplied list of literal JSON rows as-is. Great for testing pipelines without hitting real data.</td></tr>
+    <tr><td><code class="pendo">entityTag</code></td><td>(<code>visitorTags</code>/<code>accountTags</code>) Used mainly to convert CSV uploads into segments.</td></tr>
+    <tr><td><code class="pendo">recordingMetadata</code></td><td>Contextual info about Session Replay recordings.</td></tr>
+    <tr><td><code class="pendo">churnInsights</code></td><td>ML-generated insights over pages/features (partitioned by eligible vs. filtered results).</td></tr>
+    <tr><td><code class="pendo">itemSeen</code> / <code class="pendo">gcs</code></td><td><code>itemSeen</code>: reads item-seen files directly (avoids opening the visitor journal). <code>gcs</code>: used by the front-end to download path reports as CSV.</td></tr>
+  </table>
+
+  <div class="note"><b>SQL gut-check:</b> the <code>events</code> family is pre-aggregated (a daily/hourly &ldquo;baserow&rdquo; roll-up carrying <code>numEvents</code>/<code>numMinutes</code>), so it behaves like a <i>summary table</i> &mdash; you <code>SUM</code> those counts rather than counting raw rows. When you genuinely need individual interactions, reach for <code>singleEvents</code> (per-event, lightly processed &mdash; what the app itself uses), or, for debugging only, <code>rawEvents</code> (same granularity, unprocessed, slow, not for customer use). Rule of thumb: <code>events</code> for trends over time, <code>singleEvents</code> for event-level detail, <code>rawEvents</code> almost never.</div>
+</section>
+
+<section id="operators">
+  <h2>Operators = clauses</h2>
+  <p class="lead">Each pipeline step is <code>{ "operatorName": params }</code>. Here's each operator mapped to its SQL counterpart.</p>
+
+  <div class="card">
+    <div class="head"><h3 class="op">filter</h3><span class="badge sql">WHERE / HAVING</span></div>
+    <p class="when">Keep rows where an expression is true. After a <code>group</code>, it acts like <code>HAVING</code>.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "filter": "numMinutes &gt; 5 &amp;&amp; country == \"US\"" }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">WHERE numMinutes &gt; 5 AND country = 'US'</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">identified</h3><span class="badge sql">WHERE &hellip; NOT LIKE anon</span></div>
+    <p class="when">A special-case <code>filter</code>: drops anonymous visitors. Pendo gives anonymous visitors a <code>_PENDO_T_*</code> id; this operator filters on that prefix. Invert with <code>"!visitorId"</code> to get <i>only</i> anonymous visitors.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "identified": "visitorId" }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">WHERE visitorId NOT LIKE '\_PENDO\_T\_%'  -- not anonymous</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">group</h3><span class="badge sql">GROUP BY</span></div>
+    <p class="when">Group by one or more fields and aggregate. <code>group</code> = your <code>GROUP BY</code> columns, <code>fields</code> = the aggregates. Output rows keep both. With no <code>fields</code>, it just returns the unique combinations (like <code>SELECT DISTINCT</code>).</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "group": {
+    "group": ["visitorId", "accountId"],
+    "fields": {
+      "totalTime": { "sum": "numMinutes" },
+      "num":       { "count": null }
+    }
+} }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">SELECT visitorId, accountId,
+       SUM(numMinutes) AS totalTime,
+       COUNT(*)        AS num
+FROM ...
+GROUP BY visitorId, accountId;</code></pre></div>
+    </div>
+    <p class="when" style="margin-top:10px"><b>Performance tip:</b> putting a <code>limit</code> immediately after <code>group</code> is an optimization &mdash; rows come back complete (not partial), but ordering isn't guaranteed.</p>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">reduce</h3><span class="badge sql">aggregate, no GROUP BY</span></div>
+    <p class="when">Collapse <i>all</i> rows into a single row of aggregates &mdash; same aggregator syntax as <code>group.fields</code>, but no grouping key. Like a bare <code>SELECT COUNT(*), SUM(&hellip;)</code> over the whole set. Use this (with a <code>count</code> aggregator) when you need <i>unique</i> counts.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "reduce": {
+    "eventCount":   { "count": null },
+    "totalMinutes": { "sum": "numMinutes" }
+} }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">SELECT COUNT(*)        AS eventCount,
+       SUM(numMinutes) AS totalMinutes
+FROM ...;   -- collapses to one row</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">count</h3><span class="badge sql">COUNT(*)</span></div>
+    <p class="when">Counts input rows, emits a single <code>{ "count": N }</code> row. Takes only <code>null</code>. For unique counts, use <code>reduce</code>/<code>group</code> with a <code>count</code> aggregator instead.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "count": null }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">SELECT COUNT(*) FROM ...;</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">select</h3><span class="badge sql">SELECT (projection)</span></div>
+    <p class="when">Builds a new row from the listed fields/expressions and <b>discards everything else</b>. An explicit column list (and you can rename).</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "select": {
+    "visitorId":      "visitorId",
+    "numberOfEvents": "numEvents"
+} }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">SELECT visitorId,
+       numEvents AS numberOfEvents
+FROM ...;  -- only these two columns survive</code></pre></div>
+    </div>
+    <p class="when" style="margin-top:10px"><b>Want a <code>SELECT *</code>?</b> Just omit <code>select</code> entirely &mdash; with no projection step, rows flow through the pipeline carrying all of their fields.</p>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">eval</h3><span class="badge sql">SELECT *, expr AS new</span></div>
+    <p class="when">Adds or replaces fields via expressions while <b>keeping</b> the rest. (Contrast with <code>select</code>, which drops the rest.)</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "eval": {
+    "eventsPerMinute": "numEvents / numMinutes"
+} }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">SELECT *,
+       numEvents / numMinutes AS eventsPerMinute
+FROM ...;</code></pre></div>
+    </div>
+    <p class="when" style="margin-top:10px"><b>Heads-up:</b> within a single <code>eval</code> the order the expressions run is undefined. If one new field depends on another, split them into two <code>eval</code> steps.</p>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">set</h3><span class="badge sql">SELECT *, const AS new</span></div>
+    <p class="when">Like <code>eval</code> but assigns <i>constant</i> values rather than expressions.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "set": { "homeAddress": "unknown" } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">SELECT *, 'unknown' AS homeAddress FROM ...;</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">switch</h3><span class="badge sql">CASE WHEN</span></div>
+    <p class="when">Bucket a field into a new field by range/condition. Rows that match no case are <b>dropped</b> (unlike SQL <code>CASE</code>, which yields <code>NULL</code>).</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "switch": { "tier": { "minutes": [
+    { "value": "low",  "&lt;": 10 },
+    { "value": "mid",  "&gt;=": 10, "&lt;": 30 },
+    { "value": "high", "&gt;=": 30 }
+] } } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">SELECT *,
+  CASE WHEN minutes &lt; 10 THEN 'low'
+       WHEN minutes &lt; 30 THEN 'mid'
+       ELSE 'high' END AS tier
+FROM ...;</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">sort</h3><span class="badge sql">ORDER BY</span></div>
+    <p class="when">Order by a field list (priority order). Prefix a field with <code>-</code> for descending.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "sort": ["-minutes", "visitorId"] }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">ORDER BY minutes DESC, visitorId ASC</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">limit</h3><span class="badge sql">LIMIT</span></div>
+    <p class="when">Keep the first n rows. (<code>sample</code> is the cousin that keeps a <i>random</i> n instead.) Best practice when exploring: <code>limit</code> to 1 just to see the schema.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "limit": 25 }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">LIMIT 25;</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">join</h3><span class="badge sql">JOIN / merge on key</span></div>
+    <p class="when">Merges rows that share a key into one row.</p>
+    <p class="when"><b>Field conflicts:</b> if two rows being merged both set the same field, the row encountered <i>later</i> in the join wins (last-write-wins). So order the branches feeding the join with that in mind.</p>
+    <p class="when"><b>Do you need <code>width</code> up front?</b> No &mdash; it's optional. <code>width</code> tells <code>join</code> how many rows with the same key make up a complete result; once that many arrive, the merged row is emitted downstream early (a perf win). If more rows with that key appear later, they start a fresh merge. Any key that ends with fewer than <code>width</code> rows is still flushed once all input has been seen. So you can omit it and join still works &mdash; setting it just lets results stream out sooner. Most commonly used right after <code>fork</code>/<code>spawn</code>.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "join": { "fields": ["visitorId"], "width": 2 } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">-- merge the branch rows sharing visitorId into one,
+-- later branch wins on any shared column
+SELECT visitorId, ...
+FROM branch_a
+FULL JOIN branch_b USING (visitorId);</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">bulkExpand</h3><span class="badge sql">JOIN, packed into a structure</span></div>
+    <p class="when">Enriches each row with metadata from the visitor/account journals. It looks up the record and <b>nests the whole thing under a named sub-field</b> (here <code>info</code>) &mdash; it doesn't flatten the columns in. Supports <code>visitorId</code> and <code>accountId</code> only. So in SQL terms it's a left join where the joined row is packed into one structure/JSON column.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "bulkExpand": { "info": { "visitor": "visitorId" } } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">-- "info" becomes a nested structure holding the
+-- whole visitor record, alongside the event fields
+SELECT e.*, to_json(v) AS info
+FROM events e
+LEFT JOIN visitors v ON v.id = e.visitorId;</code></pre></div>
+    </div>
+    <p class="when" style="margin-top:10px"><b>Performance tip:</b> <code>limit</code>/<code>filter</code>/<code>segment</code> down to the visitors you care about <i>before</i> <code>bulkExpand</code>, so you're not expanding every visitor in the journal and discarding them later.</p>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">segment</h3><span class="badge sql">WHERE IN (subquery)</span></div>
+    <p class="when">Passes only rows whose <code>visitorId</code> belongs to a saved segment.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "segment": { "id": "seg-abc123" } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">WHERE visitorId IN (
+  SELECT visitorId FROM segment_members
+  WHERE segment_id = 'seg-abc123'
+);</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">unwind</h3><span class="badge sql">UNNEST / explode</span></div>
+    <p class="when">Expands a list field into one row per element (optionally adds an index). One-to-many fan-out.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "unwind": { "field": "items", "index": "itemIndex" } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">SELECT t.*, item, idx
+FROM t
+CROSS JOIN UNNEST(t.items) WITH ORDINALITY AS u(item, idx);</code></pre></div>
+    </div>
+    <p class="when" style="margin-top:10px">Empty list &rarr; no rows, unless <code>{"keepEmpty": true}</code> (&asymp; <code>LEFT JOIN UNNEST</code>).</p>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">fork</h3><span class="badge sql">UNION ALL of branches</span></div>
+    <p class="when">Sends the incoming rows into multiple sub-pipelines (each gets <i>all</i> the rows), does different work in each, then funnels every branch's output back into the parent pipeline. Empty branches aren't allowed &mdash; use a single <code>cat</code> if you need a pass-through branch. Often paired with <code>join</code>.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo (real wiki example)</p><pre><code class="lang-json">{ "fork": [
+  [ { "group": {
+        "group": ["visitorId"],
+        "fields": [ { "time": { "sum": "numMinutes" } } ]
+  } } ],
+  [ { "group": {
+        "group": ["accountId"],
+        "fields": [ { "time": { "sum": "numMinutes" } } ]
+  } } ]
+] }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">-- total minutes per visitor, AND per account,
+-- in one combined stream
+SELECT visitorId AS id, SUM(numMinutes) AS time
+FROM events GROUP BY visitorId
+UNION ALL
+SELECT accountId AS id, SUM(numMinutes) AS time
+FROM events GROUP BY accountId;</code></pre></div>
+    </div>
+    <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#2da44e;margin:14px 0 5px">Pendo result (example shape)</p>
+    <pre><code class="lang-json">{ "results": [
+  { "visitorId": "user-1", "time": 42 },
+  { "visitorId": "user-2", "time": 17 },
+  { "accountId": "Acme",   "time": 59 },
+  { "accountId": "Globex", "time": 23 }
+] }</code></pre>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">spawn</h3><span class="badge sql">UNION ALL of different sources</span></div>
+    <p class="when">Like <code>fork</code>, but each branch supplies its <b>own source</b> &mdash; this is how you pull from several sources into one stream. Then you usually <code>join</code> the branches back together on a key (the classic &ldquo;combine two poll responses per visitor&rdquo; pattern below).</p>
+    <p class="when"><b>Constraint:</b> sources used in <code>spawn</code> <b>cannot have an &ldquo;iterative&rdquo; <code>timeSeries</code></b> (i.e. one that expands into multiple periods). Use all-time / single-period sources here.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo (real wiki example)</p><pre><code class="lang-json">{ "spawn": [
+  [ { "source": { "pollsSeenEver":
+        { "guideId": "G", "pollId": "p1" } } },
+    { "identified": "visitorId" },
+    { "select": { "visitorId": "visitorId",
+                  "quantResponse": "response" } } ],
+  [ { "source": { "pollsSeenEver":
+        { "guideId": "G", "pollId": "p2" } } },
+    { "identified": "visitorId" },
+    { "select": { "visitorId": "visitorId",
+                  "qualResponse": "response" } } ]
+] }
+// usually followed by:
+{ "join": { "fields": ["visitorId"], "width": 2 } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">-- one row per visitor with both poll answers
+SELECT a.visitorId,
+       a.response AS quantResponse,
+       b.response AS qualResponse
+FROM pollsSeenEver_p1 a
+FULL JOIN pollsSeenEver_p2 b USING (visitorId);
+-- (spawn = the two branches; join = the merge)</code></pre></div>
+    </div>
+    <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#2da44e;margin:14px 0 5px">Pendo result &mdash; spawn merges both sources into one stream (example shape)</p>
+    <pre><code class="lang-json">{ "results": [
+  { "visitorId": "user-1", "quantResponse": 9 },
+  { "visitorId": "user-2", "quantResponse": 7 },
+  { "visitorId": "user-1", "qualResponse": "Love it" },
+  { "visitorId": "user-2", "qualResponse": "Could be faster" }
+] }</code></pre>
+    <p class="when" style="margin-top:8px">After the <code>join</code> on <code>visitorId</code>, each visitor's two rows merge into one combined row.</p>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">unmarshal</h3><span class="badge sql">JSON_PARSE</span></div>
+    <p class="when">Parses a JSON <i>string</i> in field <code>input</code> into addressable sub-fields under <code>output</code>. In practice you'll see it almost only with <code>rawEvents</code> &mdash; only a few sources carry an unparsed JSON blob, and that's the main one. It's typically followed by <code>unwind</code> to split each embedded event into its own row.</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "unmarshal": { "destField": "rawJson" } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">SELECT JSON_PARSE(rawJson) AS destField, ...
+FROM raw_events;</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">useragent</h3><span class="badge sql">no SQL equivalent</span></div>
+    <p class="when">Parses a user-agent string in field <code>input</code> into a structured object under <code>output</code>: <code>name</code>, <code>version</code>, <code>os</code>, <code>type</code>, <code>deviceType</code>, <code>renderVersion</code>. There's no native SQL counterpart &mdash; it's a built-in parser (you'd reach for a UDF in SQL).</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "useragent": { "parsedUA": "userAgent" } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">-- no built-in equivalent; would require a UDF, e.g.
+-- SELECT parse_user_agent(userAgent) AS parsedUA ...</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">cat</h3><span class="badge sql">no-op (pass-through)</span></div>
+    <p class="when">Does nothing &mdash; passes rows straight through. The wiki literally says &ldquo;you probably never need to use it.&rdquo; The one real use is as a placeholder pass-through branch inside a <code>fork</code> (where empty branches aren't allowed).</p>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "cat": null }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">-- no equivalent; it's a pass-through (rows unchanged)</code></pre></div>
+    </div>
+  </div>
+</section>
+
+<section id="aggregators">
+  <h2>Aggregators (inside group / reduce) </h2>
+  <p class="lead">These are the functions you put in <code>fields</code> / <code>reduce</code>. Form is <code>{ "outName": { "aggName": "inField-or-expr" } }</code> &mdash; the input can be an expression, e.g. <code>{ "sum": "time - 100" }</code>.</p>
+  <table class="ref">
+    <tr><th>Pendo</th><th>SQL</th><th>Notes</th></tr>
+    <tr><td><code class="pendo">{ "count": null }</code></td><td><code class="sql">COUNT(*)</code></td><td>Counts rows in the group.</td></tr>
+    <tr><td><code class="pendo">{ "count": "field" }</code></td><td><code class="sql">COUNT(DISTINCT field)</code></td><td>Naming a field counts <i>unique</i> occurrences.</td></tr>
+    <tr><td><code class="pendo">{ "count": ["f1","f2"] }</code></td><td><code class="sql">COUNT(DISTINCT (f1,f2))</code></td><td>Unique value <i>combinations</i>.</td></tr>
+    <tr><td><code class="pendo">{ "sum": "expr" }</code></td><td><code class="sql">SUM(expr)</code></td><td>Expression allowed in the input.</td></tr>
+    <tr><td><code class="pendo">{ "avg": "field" }</code></td><td><code class="sql">AVG(field)</code></td><td>Mean of the field across the group.</td></tr>
+    <tr><td><code class="pendo">{ "min": "field" }</code> / <code class="pendo">{ "max": "field" }</code></td><td><code class="sql">MIN / MAX</code></td><td></td></tr>
+    <tr><td><code class="pendo">{ "first": "field" }</code></td><td><code class="sql">FIRST_VALUE(field)</code></td><td>Only as deterministic as the input order &mdash; <code>sort</code> first if it matters.</td></tr>
+    <tr><td><code class="pendo">{ "list": "field" }</code></td><td><code class="sql">ARRAY_AGG(field)</code></td><td>Collects the group's values into a list.</td></tr>
+    <tr><td><code class="pendo">{ "concat": "field" }</code></td><td><code class="sql">STRING_AGG / array concat</code></td><td>Concatenates the group's values together.</td></tr>
+    <tr><td><code class="pendo">{ "countIf": { "count": "f", "if": "expr" } }</code></td><td><code class="sql">COUNT(f) FILTER (WHERE expr)</code></td><td>Conditional count (from the Advanced operators page).</td></tr>
+  </table>
+  <div class="note"><b>On the full list:</b> these are the documented aggregators. The authoritative catalogue lives in code (<code>aggregation/fieldaggregators.go</code>), so a few more may exist that aren't on the wiki.</div>
+</section>
+
+<section id="functions">
+  <h2>Expression functions &rarr; SQL functions</h2>
+  <p class="lead">Expressions (used in <code>filter</code>, <code>eval</code>, <code>select</code>, <code>timeSeries.first</code>) follow C-style syntax. Operators: <code>== != &amp;&amp; || &lt; &gt; &lt;= &gt;= + - / * % !</code>. All numbers are treated as floats. (The full function list lives in <code>aggregation/expr/funcs.go</code>.)</p>
+  <table class="ref">
+    <tr><th>Pendo</th><th>SQL</th><th>Notes</th></tr>
+    <tr><td><code class="pendo">a == b</code> / <code class="pendo">a != b</code></td><td><code class="sql">a = b</code> / <code class="sql">a &lt;&gt; b</code></td><td><code>null</code> is a distinct value: <code>null == null</code> is true.</td></tr>
+    <tr><td><code class="pendo">a &amp;&amp; b</code> / <code class="pendo">a || b</code></td><td><code class="sql">a AND b</code> / <code class="sql">a OR b</code></td><td>For <code>&amp;&amp;</code>/<code>||</code>, <code>null</code> behaves like <code>false</code>.</td></tr>
+    <tr><td><code class="pendo">if(test, a, b)</code></td><td><code class="sql">CASE WHEN test THEN a ELSE b END</code></td><td>The third arg is <b>optional</b>: omit it and the result is <code>null</code> when <code>test</code> is false (i.e. <code>CASE WHEN test THEN a END</code>). E.g. <code>if(numEvents &gt; 0, "active")</code> &rarr; <code>"active"</code> when true, <code>null</code> when false.</td></tr>
+    <tr><td><code class="pendo">isNull(f)</code></td><td><code class="sql">f IS NULL</code></td><td>Also true if the field is absent.</td></tr>
+    <tr><td><code class="pendo">contains(list, item)</code></td><td><code class="sql">item = ANY(list)</code></td><td>List membership.</td></tr>
+    <tr><td><code class="pendo">contains(str, sub)</code></td><td><code class="sql">str LIKE '%sub%'</code></td><td>Substring test.</td></tr>
+    <tr><td><code class="pendo">startsWith(str, pre)</code></td><td><code class="sql">str LIKE 'pre%'</code></td><td></td></tr>
+    <tr><td><code class="pendo">len(field)</code></td><td><code class="sql">LENGTH / CARDINALITY</code></td><td>Length of a string or list, e.g. <code>len(accountId) &gt;= 10</code>.</td></tr>
+    <tr><td><code class="pendo">split(s, sep)</code></td><td><code class="sql">STRING_TO_ARRAY(s, sep)</code></td><td>Returns a list of strings.</td></tr>
+    <tr><td><code class="pendo">round / floor / ceil(v)</code></td><td><code class="sql">ROUND / FLOOR / CEIL(v)</code></td><td>Returns <code>null</code> on <code>null</code>.</td></tr>
+    <tr><td><code class="pendo">now()</code></td><td><code class="sql">EXTRACT(EPOCH FROM now())*1000</code></td><td>Milliseconds since epoch &mdash; handy in <code>timeSeries.first</code>.</td></tr>
+    <tr><td><code class="pendo">formatTime(fmt, ts)</code></td><td><code class="sql">TO_CHAR(ts, fmt)</code></td><td>Go-style format string, e.g. <code>formatTime("2006-01-02", day)</code>.</td></tr>
+    <tr><td><code class="pendo">dateAdd(&hellip;)</code></td><td><code class="sql">ts + INTERVAL</code></td><td>Date arithmetic.</td></tr>
+    <tr><td><code class="pendo">hash(s)</code></td><td><code class="sql">MD5 / hashing fn</code></td><td>e.g. anonymising a <code>visitorId</code> with <code>hash(visitorId)</code>.</td></tr>
+    <tr><td><code class="pendo">list[2]</code>, <code class="pendo">list[-1]</code>, <code class="pendo">list[1:3]</code></td><td><code class="sql">array[3]</code>, slices</td><td>JS/Python-style indexing &amp; slices; negative = from the end.</td></tr>
+  </table>
+</section>
+
+<section id="examples">
+  <h2>Worked end-to-end examples</h2>
+  <p class="lead">Full pipelines translated to full SQL &mdash; read top-to-bottom on both sides.</p>
+
+  <div class="card">
+    <div class="head"><h3 class="op">1 &middot; Minutes per identified visitor, last 30 days, top 10</h3></div>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "request": { "pipeline": [
+  { "source": { "events": null },
+    "timeSeries": { "period": "dayRange",
+                    "first": "now()",
+                    "count": -30 } },
+  { "identified": "visitorId" },
+  { "group": { "group": ["visitorId"],
+      "fields": [ { "minutes": { "sum": "numMinutes" } } ] } },
+  { "sort": ["-minutes"] },
+  { "limit": 10 }
+] } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">SELECT visitorId, SUM(numMinutes) AS minutes
+FROM events
+WHERE day &gt;= NOW() - INTERVAL '30 days'
+  AND visitorId NOT LIKE '\_PENDO%'
+GROUP BY visitorId
+ORDER BY minutes DESC
+LIMIT 10;</code></pre></div>
+    </div>
+    <p class="when" style="margin-top:10px"><code>first: "now()"</code> with <code>count: -30</code> = the 30 day-periods ending now (negative count walks backward).</p>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">2 &middot; Total events &amp; unique visitors (single summary row)</h3></div>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "request": { "pipeline": [
+  { "source": { "events": null },
+    "timeSeries": { "period": "dayRange",
+                    "first": 1404745200000, "count": 30 } },
+  { "reduce": {
+      "totalEvents":    { "sum": "numEvents" },
+      "uniqueVisitors": { "count": "visitorId" }
+  } }
+] } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">SELECT SUM(numEvents)            AS totalEvents,
+       COUNT(DISTINCT visitorId) AS uniqueVisitors
+FROM events
+WHERE day &gt;= '2014-07-07'
+  AND day &lt;  '2014-08-06';</code></pre></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="head"><h3 class="op">3 &middot; Bucket visitors into engagement tiers</h3></div>
+    <div class="cols">
+      <div class="codecol"><p class="label pendo">Pendo</p><pre><code class="lang-json">{ "request": { "pipeline": [
+  { "source": { "events": null },
+    "timeSeries": { "period": "dayRange",
+                    "first": 1404745200000, "count": 30 } },
+  { "group": { "group": ["visitorId"],
+      "fields": [ { "minutes": { "sum": "numMinutes" } } ] } },
+  { "switch": { "tier": { "minutes": [
+      { "value": "low",   "&lt;": 10 },
+      { "value": "mid",   "&gt;=": 10, "&lt;": 60 },
+      { "value": "power", "&gt;=": 60 }
+  ] } } },
+  { "group": { "group": ["tier"],
+      "fields": [ { "visitors": { "count": null } } ] } }
+] } }</code></pre></div>
+      <div class="codecol"><p class="label sql">SQL</p><pre><code class="lang-sql">WITH per_visitor AS (
+  SELECT visitorId, SUM(numMinutes) AS minutes
+  FROM events
+  WHERE day &gt;= '2014-07-07' AND day &lt; '2014-08-06'
+  GROUP BY visitorId
+)
+SELECT
+  CASE WHEN minutes &lt; 10 THEN 'low'
+       WHEN minutes &lt; 60 THEN 'mid'
+       ELSE 'power' END AS tier,
+  COUNT(*) AS visitors
+FROM per_visitor
+GROUP BY tier;</code></pre></div>
+    </div>
+    <p class="when" style="margin-top:10px">Note how the two-stage Pendo pipeline (group &rarr; switch &rarr; group) reads exactly like a CTE feeding an outer aggregate in SQL.</p>
+  </div>
+</section>
+
+<section id="gotchas">
+  <h2>Final clarifications</h2>
+  <div class="gotcha"><b>Order is execution order.</b> No optimizer reorders your steps. Filter early to keep row counts (and runtime) down &mdash; same instinct as a good <code>WHERE</code>, but here it's literal.</div>
+  <div class="gotcha"><b><code>select</code> drops, <code>eval</code> keeps &mdash; and no <code>select</code> = <code>SELECT *</code>.</b> <code>select</code> is an explicit projection (everything else gone); <code>eval</code>/<code>set</code> add columns alongside existing ones; omitting <code>select</code> entirely passes all fields through.</div>
+  <div class="gotcha"><b><code>switch</code> drops non-matches.</b> Unlike SQL <code>CASE</code> (which returns <code>NULL</code>), a row matching no case is removed. Add a catch-all condition to keep everything.</div>
+  <div class="gotcha"><b>Time is mandatory &amp; in epoch (ms).</b> Event sources require a <code>timeSeries</code>. <code>first</code> is milliseconds since epoch, stating the start of the time range; <code>count</code> is the number of periods (negative walks backward from <code>first</code>). Entity sources (<code>visitors</code>, <code>pages</code>&hellip;) don't take one.</div>
+  <div class="gotcha"><b>Pick the right events source.</b> <code>events</code>/<code>pageEvents</code>/<code>featureEvents</code>/<code>trackEvents</code> are pre-aggregated roll-ups (<code>numEvents</code>/<code>numMinutes</code>) &mdash; great for trends, but you <code>SUM</code> counts rather than counting raw rows. For event-level detail use <code>singleEvents</code> (what the app uses); <code>rawEvents</code> is debugging-only and best avoided.</div>
+  <div class="gotcha"><b><code>count</code> with a field = DISTINCT.</b> Inside <code>group</code>/<code>reduce</code>, <code>{ "count": null }</code> is <code>COUNT(*)</code>; <code>{ "count": "visitorId" }</code> is <code>COUNT(DISTINCT visitorId)</code>. Easy to mix up.</div>
+</section>
+
+<footer>
+  Built for Billy's onboarding &middot; Mappings verified against Pendo's aggregation docs:
+  <ul><li><a href="https://engageapi.pendo.io" target="_blank">Pendo Engage API reference</a> (public Postman docs)</li>
+    <li><a href="https://pendo-io.atlassian.net/wiki/spaces/ENG/pages/2319089694/Aggregations+101" target="_blank">Aggregations 101</a> (Confluence, space ENG &mdash; parent page for all aggregation docs)</li>
+  </ul>
+  SQL equivalents are illustrative (ANSI / Postgres flavor) &mdash; exact functions vary by dialect.
+</footer>
+
+<script>
+(function () {
+  var KW = {}, FN = {};
+  "SELECT FROM WHERE AND OR NOT NULL GROUP BY ORDER LIMIT HAVING AS JOIN LEFT RIGHT FULL INNER OUTER ON USING UNION ALL CASE WHEN THEN ELSE END IN IS LIKE DISTINCT WITH INTERVAL CROSS UNNEST ORDINALITY ANY BETWEEN DESC ASC EXTRACT EPOCH FILTER"
+    .split(" ").forEach(function(w){ KW[w] = 1; });
+  "SUM COUNT MAX MIN AVG ROUND FLOOR CEIL COALESCE DATE_TRUNC TO_CHAR NOW CARDINALITY LENGTH STRING_TO_ARRAY STRING_AGG ARRAY_AGG FIRST_VALUE JSON_PARSE MD5"
+    .split(" ").forEach(function(w){ FN[w] = 1; });
+
+  function wrap(cls, txt){ return '<span class="t-' + cls + '">' + txt + '</span>'; }
+  var isWord = function(c){ return c && /[A-Za-z0-9_]/.test(c); };
+
+  function highlightJSON(text){
+    var out = '', i = 0, n = text.length;
+    while (i < n){
+      var ch = text[i];
+      if (ch === '"'){
+        var j = i + 1;
+        while (j < n && !(text[j] === '"' && text[j-1] !== '\\')) j++;
+        var str = text.slice(i, j + 1);
+        var k = j + 1; while (text[k] === ' ') k++;
+        out += (text[k] === ':') ? wrap('key', str) : wrap('str', str);
+        i = j + 1;
+      } else if (ch === '/' && text[i+1] === '/'){
+        var c = i; while (c < n && text[c] !== '\n') c++;
+        out += wrap('comment', text.slice(i, c)); i = c;
+      } else if (/[0-9]/.test(ch) && !isWord(text[i-1])){
+        var p = i; while (p < n && /[0-9.\-eE+]/.test(text[p])) p++;
+        out += wrap('num', text.slice(i, p)); i = p;
+      } else if (/^(true|false|null)/.test(text.slice(i)) && !isWord(text[i-1])){
+        var m = text.slice(i).match(/^(true|false|null)/)[0];
+        out += wrap('bool', m); i += m.length;
+      } else if ('{}[]:,'.indexOf(ch) !== -1){
+        out += wrap('punc', ch); i++;
+      } else { out += ch; i++; }
+    }
+    return out;
+  }
+
+  function highlightSQL(text){
+    var out = '', i = 0, n = text.length;
+    while (i < n){
+      var ch = text[i];
+      if (ch === '-' && text[i+1] === '-'){
+        var j = i; while (j < n && text[j] !== '\n') j++;
+        out += wrap('comment', text.slice(i, j)); i = j;
+      } else if (ch === "'"){
+        var j = i + 1;
+        while (j < n && text[j] !== "'"){ if (text[j] === '\\') j++; j++; }
+        j++;
+        var end = Math.min(j, n);
+        out += wrap('str', text.slice(i, end)); i = end;
+      } else if (/[A-Za-z_]/.test(ch)){
+        var j = i; while (j < n && /[A-Za-z0-9_]/.test(text[j])) j++;
+        var w = text.slice(i, j), up = w.toUpperCase();
+        out += FN[up] ? wrap('func', w) : (KW[up] ? wrap('key', w) : w);
+        i = j;
+      } else if (/[0-9]/.test(ch) && !isWord(text[i-1])){
+        var j = i; while (j < n && /[0-9.]/.test(text[j])) j++;
+        out += wrap('num', text.slice(i, j)); i = j;
+      } else { out += ch; i++; }
+    }
+    return out;
+  }
+
+  document.querySelectorAll('pre code').forEach(function(el){
+    var raw = el.innerHTML;
+    if (el.classList.contains('lang-json')) el.innerHTML = highlightJSON(raw);
+    else if (el.classList.contains('lang-sql')) el.innerHTML = highlightSQL(raw);
+  });
+
+  document.querySelectorAll('nav a').forEach(function(a){
+    a.addEventListener('click', function(e){
+      var t = document.querySelector(a.getAttribute('href'));
+      if (t){ e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+})();
+</script>
+</div>
+</body>
+</html>
