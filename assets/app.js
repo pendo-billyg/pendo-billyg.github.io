@@ -739,12 +739,13 @@ function initContactsList() {
     const rows = contacts.map(c => [c.id, c.name, c.email, c.company, c.status, c.role, c.lastContacted, c.owner]);
     const result = downloadCsv(`contacts-${todayStamp()}.csv`, headers, rows);
 
-    if (window.pendo && typeof pendo.track === 'function') {
+    if (window.pendo && typeof 
+      k === 'function') {
       pendo.track('csv_export', {
         type: 'contacts',
         row_count: result.rowCount,
         file_size_bytes: result.bytes,
-        filename: result.filename,
+        Filename: result.filename,
         success: result.success
       });
     }
