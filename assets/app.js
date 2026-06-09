@@ -745,7 +745,7 @@ function initContactsList() {
         type: 'contacts',
         row_count: result.rowCount,
         file_size_bytes: result.bytes,
-        filename: result.filename,
+        testing_filename: result.filename,
         success: result.success
       });
     }
