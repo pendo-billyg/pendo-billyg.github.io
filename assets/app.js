@@ -551,13 +551,16 @@ function wireSharedUI() {
     const data = new FormData(e.target);
     const visitorId = data.get('visitorId').trim();
     const accountId = data.get('accountId').trim();
+    const visitorCreatedAt = data.get('visitorCreatedAt');
     if (!visitorId || !accountId) return;
+    const createdAtMs = visitorCreatedAt ? new Date(visitorCreatedAt).getTime() : null;
 
     setAuth({
       visitor: {
-        id:    visitorId,
-        name:  (data.get('visitorName')  || '').trim(),
-        email: (data.get('visitorEmail') || '').trim()
+        id:        visitorId,
+        name:      (data.get('visitorName')  || '').trim(),
+        email:     (data.get('visitorEmail') || '').trim(),
+        createdAt: createdAtMs
       },
       account: {
         id:   accountId,
@@ -570,7 +573,8 @@ function wireSharedUI() {
         visitor: {
           id:        visitorId,
           email:     (data.get('visitorEmail') || '').trim(),
-          full_name: (data.get('visitorName')  || '').trim()
+          full_name: (data.get('visitorName')  || '').trim(),
+          createdAt: createdAtMs
         },
         account: {
           id:   accountId,

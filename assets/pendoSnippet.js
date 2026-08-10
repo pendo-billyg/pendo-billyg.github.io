@@ -30,33 +30,34 @@ const PENDO_API_KEY = '4298b339-33d2-49e7-87e6-dcd5b240f48c';
 // BillyCRM auth state flows through to Pendo. If signed out, sends an
 // anonymous visitor (matches what most real apps do for unauthenticated users).
 
-(function () {
-    let auth = {};
-    try {
-        auth = JSON.parse(localStorage.getItem('billycrm-auth') || '{}');
-    } catch (e) {}
-    const visitor = auth.visitor || {};
-    const account = auth.account || {};
-    pendo.initialize({
-        visitor: {
-            id: visitor.id || '',
-            email: visitor.email || '',
-            full_name: visitor.name || ''
-        },
-        account: {
-            id: account.id || '',
-            name: account.name || ''
-        }
-    });
-})();
+let auth = {};
+try {
+    auth = JSON.parse(localStorage.getItem('billycrm-auth') || '{}');
+} catch (e) {}
+const visitor = auth.visitor || {};
+const account = auth.account || {};
+
+pendo.initialize({
+    visitor: {
+        id: visitor.id || '',
+        email: visitor.email || '',
+        full_name: visitor.name || '',
+        createdAt: visitor.createdAt || null
+    },
+    account: {
+        id: account.id || '',
+        name: account.name || ''
+    }
+});
 
 window.intercomSettings = {
     api_base: "https://api-iam.intercom.io",
     app_id: "m0avo01z",
-    user_id: user.id, // IMPORTANT: Replace "user.id" with the variable you use to capture the user's ID
-    name: user.name, // IMPORTANT: Replace "user.name" with the variable you use to capture the user's name
-    email: user.email, // IMPORTANT: Replace "user.email" with the variable you use to capture the user's email address
-    created_at: user.createdAt, // IMPORTANT: Replace "user.createdAt" with the variable you use to capture the user's sign-up date
+    user_id: visitor.id,
+    name: visitor.name,
+    email: visitor.email,
+    // Intercom expects created_at as Unix seconds; visitor.createdAt is stored in ms
+    created_at: visitor.createdAt ? Math.floor(visitor.createdAt / 1000) : null
 };
 
 (function () {
