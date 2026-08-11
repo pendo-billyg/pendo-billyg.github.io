@@ -50,15 +50,15 @@ pendo.initialize({
     }
 });
 
-window.intercomSettings = {
-    api_base: "https://api-iam.intercom.io",
-    app_id: "m0avo01z",
-    user_id: visitor.id,
-    name: visitor.name,
-    email: visitor.email,
-    // Intercom expects created_at as Unix seconds; visitor.createdAt is stored in ms
-    created_at: visitor.createdAt ? Math.floor(visitor.createdAt / 1000) : null
-};
+// window.intercomSettings = {
+//     api_base: "https://api-iam.intercom.io",
+//     app_id: "m0avo01z",
+//     user_id: visitor.id,
+//     name: visitor.name,
+//     email: visitor.email,
+//     // Intercom expects created_at as Unix seconds; visitor.createdAt is stored in ms
+//     created_at: visitor.createdAt ? Math.floor(visitor.createdAt / 1000) : null
+// };
 
 (function () {
     var w = window;
