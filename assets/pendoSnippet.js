@@ -52,7 +52,6 @@ pendo.initialize({
 
 window.intercomSettings = {
     api_base: "https://api-iam.intercom.io",
-    app_id: "m0avo01z",
     user_id: visitor.id,
     name: visitor.name,
     email: visitor.email,
@@ -94,3 +93,14 @@ window.intercomSettings = {
         }
     }
 })();
+
+setTimeout(function () {
+    Intercom('boot', {
+        api_base: "https://api-iam.intercom.io",
+        app_id: "m0avo01z",
+        user_id: visitor.id,
+        name: visitor.name,
+        email: visitor.email,
+        created_at: visitor.createdAt ? Math.floor(visitor.createdAt / 1000) : null
+    });
+}, 5000);
