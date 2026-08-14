@@ -101,6 +101,7 @@ setTimeout(function () {
         user_id: visitor.id,
         name: visitor.name,
         email: visitor.email,
+        hide_default_launcher: false,
         created_at: visitor.createdAt ? Math.floor(visitor.createdAt / 1000) : null
     });
 }, 10000);
