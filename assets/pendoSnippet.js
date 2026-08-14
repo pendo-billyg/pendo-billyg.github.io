@@ -56,7 +56,7 @@ window.intercomSettings = {
     user_id: visitor.id,
     name: visitor.name,
     email: visitor.email,
-    hide_default_launcher: false,
+    hide_default_launcher: true,
     // Intercom expects created_at as Unix seconds; visitor.createdAt is stored in ms
     created_at: visitor.createdAt ? Math.floor(visitor.createdAt / 1000) : null
 };
