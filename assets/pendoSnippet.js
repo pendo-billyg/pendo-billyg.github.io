@@ -103,4 +103,4 @@ setTimeout(function () {
         email: visitor.email,
         created_at: visitor.createdAt ? Math.floor(visitor.createdAt / 1000) : null
     });
-}, 5000);
+}, 10000);
