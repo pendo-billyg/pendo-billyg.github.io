@@ -5,8 +5,9 @@ in via the BillyCRM avatar is identified to Pendo at boot.
 ============================================================ */
 
 const PENDO_API_KEY = '4298b339-33d2-49e7-87e6-dcd5b240f48c';
+const PENDO_INIT_DELAY_MS = 10000;
 
-// Step 1: uncomment the loader to fetch the Pendo agent, add API key
+// Step 1: load the Pendo agent (unchanged — loads immediately)
 (function (apiKey) {
     (function (p, e, n, d, o) {
         var v, w, x, y, z;
@@ -26,10 +27,6 @@ const PENDO_API_KEY = '4298b339-33d2-49e7-87e6-dcd5b240f48c';
     })(window, document, 'script', 'pendo');
 })(PENDO_API_KEY);
 
-// Step 2: uncomment the initializer below. It reads from localStorage so the
-// BillyCRM auth state flows through to Pendo. If signed out, sends an
-// anonymous visitor (matches what most real apps do for unauthenticated users).
-
 let auth = {};
 try {
     auth = JSON.parse(localStorage.getItem('billycrm-auth') || '{}');
@@ -37,21 +34,27 @@ try {
 const visitor = auth.visitor || {};
 const account = auth.account || {};
 
-pendo.initialize({
-    visitor: {
-        id: visitor.id || '',
-        email: visitor.email || '',
-        full_name: visitor.name || '',
-        createdAt: visitor.createdAt || null
-    },
-    account: {
-        id: account.id || '',
-        name: account.name || ''
-    }
-});
+// Step 2: DELAYED pendo.initialize — this is the race.
+// Intercom gets a head start of PENDO_INIT_DELAY_MS.
+setTimeout(function () {
+    console.log('[racetest] ' + new Date().toISOString() + ' calling pendo.initialize');
+    pendo.initialize({
+        visitor: {
+            id: visitor.id || '',
+            email: visitor.email || '',
+            full_name: visitor.name || '',
+            createdAt: visitor.createdAt || null
+        },
+        account: {
+            id: account.id || '',
+            name: account.name || ''
+        }
+    });
+}, PENDO_INIT_DELAY_MS);
 
 window.intercomSettings = {
     api_base: "https://api-iam.intercom.io",
+    app_id: "m0avo01z",
     user_id: visitor.id,
     name: visitor.name,
     email: visitor.email,
@@ -93,15 +96,3 @@ window.intercomSettings = {
         }
     }
 })();
-
-setTimeout(function () {
-    Intercom('boot', {
-        api_base: "https://api-iam.intercom.io",
-        app_id: "m0avo01z",
-        user_id: visitor.id,
-        name: visitor.name,
-        email: visitor.email,
-        hide_default_launcher: false,
-        created_at: visitor.createdAt ? Math.floor(visitor.createdAt / 1000) : null
-    });
-}, 10000);
