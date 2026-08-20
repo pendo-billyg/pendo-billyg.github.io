@@ -20,7 +20,7 @@ const PENDO_API_KEY = '4298b339-33d2-49e7-87e6-dcd5b240f48c';
         })(v[w]);
         y = e.createElement(n);
         y.async = !0;
-        y.src = 'https://cdn.pendo.io/agent/static/' + apiKey + '/pendo.js';
+        y.src = 'https://cdn.pendo.io/agent/static/' + publicAppId + '/pendo.js';
         z = e.getElementsByTagName(n)[0];
         z.parentNode.insertBefore(y, z);
     })(window, document, 'script', 'pendo');
