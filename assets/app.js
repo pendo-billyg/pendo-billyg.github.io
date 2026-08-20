@@ -141,6 +141,36 @@ const SEED_TICKETS = [
   { id:'TKT-1031', subject:'How to set up custom Pendo guides?',        customerId:'aaliyah-williams', priority:'low',    status:'closed',      description:'Sent links to the relevant Pendo docs and a follow-up call summary.',                                                       assignee:'Billy Grey', created:'2026-04-15', updated:'2026-04-20' }
 ];
 
+// Which tickets render as expandable menus instead of links, and what's inside them.
+// items[].children  -> renders a nested (second-level) dropdown
+// items[] without children -> renders as a single clickable row
+const TICKET_MENUS = {
+  'TKT-1034': [
+    { id: 'diagnostics', label: 'Diagnostics', children: [
+      { id: 'agent-state',  label: 'Check agent state' },
+      { id: 'dump-meta',    label: 'Dump metadata' },
+      { id: 'clear-storage', label: 'Clear Pendo storage' }
+    ]},
+    { id: 'view-ticket', label: 'View full ticket' }
+  ],
+  'TKT-1033': [
+    { id: 'reassign',  label: 'Reassign to Sasha' },
+    { id: 'reopen',    label: 'Reopen ticket' }
+  ],
+  'TKT-1032': [
+    { id: 'export', label: 'Export options', children: [
+      { id: 'export-csv',  label: 'Export as CSV' },
+      { id: 'export-json', label: 'Export as JSON' },
+      { id: 'export-pdf',  label: 'Export as PDF' }
+    ]},
+    { id: 'duplicate', label: 'Duplicate ticket' }
+  ],
+  'TKT-1031': [
+    { id: 'copy-link', label: 'Copy ticket link' },
+    { id: 'archive',   label: 'Archive' }
+  ]
+};
+
 // Working copies — mutations live for the page session, reset on reload.
 let contacts = [...SEED_CONTACTS];
 let tickets  = [...SEED_TICKETS];
@@ -290,6 +320,32 @@ function renderContactDetail(id) {
   document.getElementById('edit-contact-button').addEventListener('click', () => openEditContactModal(id));
 }
 
+function renderTicketMenuItem(ticketId, item) {
+  const key = `${ticketId}:${item.id}`;
+
+  if (!item.children) {
+    return `<button type="button" class="ticket-menu-item" data-action="${escapeHtml(key)}">${escapeHtml(item.label)}</button>`;
+  }
+
+  const submenuId = `submenu-${escapeHtml(ticketId)}-${escapeHtml(item.id)}`;
+  return `
+    <div class="ticket-submenu-group">
+      <button type="button"
+              class="ticket-menu-item has-submenu"
+              aria-expanded="false"
+              aria-controls="${submenuId}"
+              data-submenu="${submenuId}">
+        ${escapeHtml(item.label)}
+        <span class="ticket-chevron small" aria-hidden="true">&#9662;</span>
+      </button>
+      <div class="ticket-submenu" id="${submenuId}" hidden>
+        ${item.children.map(child =>
+          `<button type="button" class="ticket-menu-leaf" data-action="${escapeHtml(key + ':' + child.id)}">${escapeHtml(child.label)}</button>`
+        ).join('')}
+      </div>
+    </div>`;
+}
+
 function renderTicketsList(searchTerm, statusFilter, priorityFilter) {
   const list = document.getElementById('tickets-list');
   if (!list) return;
@@ -317,19 +373,47 @@ function renderTicketsList(searchTerm, statusFilter, priorityFilter) {
       ? `<a class="customer-link" href="contact-detail.html?id=${c.id}">${escapeHtml(c.name)}</a> &middot; ${escapeHtml(c.company)}`
       : '-';
     const statusLabel = t.status === 'in-progress' ? 'In progress' : t.status;
-    return `
-      <div class="ticket-card" data-ticket-id="${escapeHtml(t.id)}" role="link" tabindex="0">
+
+    const pills = `
+        <div class="ticket-pills">
+          <span class="priority-pill ${t.priority}">${escapeHtml(t.priority)}</span>
+          <span class="ticket-status-pill ${t.status}">${escapeHtml(statusLabel)}</span>
+        </div>`;
+
+    const main = `
         <div class="ticket-card-main">
           <div class="ticket-id">${escapeHtml(t.id)}</div>
           <div class="ticket-subject">${escapeHtml(t.subject)}</div>
           <div class="ticket-customer">${customerLabel}</div>
+        </div>`;
+
+    const menu = TICKET_MENUS[t.id];
+
+    // --- Menu card: expands in place, does not navigate ---
+    if (menu) {
+      return `
+      <div class="ticket-card-wrap" data-ticket-id="${escapeHtml(t.id)}">
+        <div class="ticket-card has-menu"
+             role="button"
+             tabindex="0"
+             aria-expanded="false"
+             aria-controls="menu-${escapeHtml(t.id)}">
+          ${main}
+          ${pills}
+          <span class="ticket-chevron" aria-hidden="true">&#9662;</span>
         </div>
-        <div class="ticket-pills">
-          <span class="priority-pill ${t.priority}">${escapeHtml(t.priority)}</span>
-          <span class="ticket-status-pill ${t.status}">${escapeHtml(statusLabel)}</span>
+        <div class="ticket-menu" id="menu-${escapeHtml(t.id)}" hidden>
+          ${menu.map(item => renderTicketMenuItem(t.id, item)).join('')}
         </div>
-      </div>
-    `;
+      </div>`;
+    }
+
+    // --- Normal card: unchanged behaviour ---
+    return `
+      <div class="ticket-card" data-ticket-id="${escapeHtml(t.id)}" role="link" tabindex="0">
+        ${main}
+        ${pills}
+      </div>`;
   }).join('');
 }
 
@@ -794,16 +878,47 @@ function initTicketsList() {
   });
   document.getElementById('add-ticket-button')?.addEventListener('click', openAddTicketModal);
 
-  // Delegated click on ticket cards (cards are <div>, customer name is a real <a>)
   document.getElementById('tickets-list')?.addEventListener('click', e => {
     if (e.target.closest('a')) return; // let the customer link handle its own clicks
+
+    // 1. Second-level toggle — check this FIRST, it's the innermost target
+    const subToggle = e.target.closest('.ticket-menu-item.has-submenu');
+    if (subToggle) {
+      const panel = document.getElementById(subToggle.dataset.submenu);
+      const open = panel.hidden;
+      panel.hidden = !open;
+      subToggle.setAttribute('aria-expanded', String(open));
+      return;
+    }
+
+    // 2. Leaf item — no behaviour yet, just don't fall through to navigation
+    if (e.target.closest('.ticket-menu-leaf, .ticket-menu-item')) return;
+
+    // 3. Top-level card that owns a menu
+    const menuCard = e.target.closest('.ticket-card.has-menu');
+    if (menuCard) {
+      const panel = document.getElementById(menuCard.getAttribute('aria-controls'));
+      const open = panel.hidden;
+      panel.hidden = !open;
+      menuCard.setAttribute('aria-expanded', String(open));
+      menuCard.classList.toggle('open', open);
+      return;
+    }
+
+    // 4. Normal card — unchanged
     const card = e.target.closest('.ticket-card');
     if (card?.dataset.ticketId) {
       location.href = `ticket-detail.html?id=${card.dataset.ticketId}`;
     }
   });
+
   document.getElementById('tickets-list')?.addEventListener('keydown', e => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (e.target.closest('.ticket-menu, .ticket-card.has-menu')) {
+      e.preventDefault();
+      e.target.click();   // reuse the click logic above
+      return;
+    }
     const card = e.target.closest('.ticket-card');
     if (card?.dataset.ticketId) {
       e.preventDefault();

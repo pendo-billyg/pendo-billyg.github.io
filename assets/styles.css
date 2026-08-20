@@ -370,6 +370,103 @@ button.secondary:hover { color: var(--text-primary); background: var(--bg-box-ho
 .ticket-card:hover { background: var(--bg-box-hover); }
 .ticket-card-main { flex: 1; min-width: 0; }
 
+/* ---------- Expandable ticket menus ---------- */
+
+.ticket-card-wrap {
+  position: relative;
+}
+
+.ticket-card.has-menu {
+  cursor: pointer;
+}
+.ticket-card.has-menu.open {
+  background: var(--bg-box-hover);
+  border-color: var(--sage);
+}
+
+.ticket-chevron {
+  color: var(--text-secondary);
+  font-size: 12px;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+.ticket-card.has-menu.open .ticket-chevron {
+  transform: rotate(180deg);
+}
+.ticket-chevron.small {
+  font-size: 10px;
+  margin-left: auto;
+}
+
+.ticket-menu {
+  background: var(--bg-box);
+  border: 1px solid var(--border-box);
+  border-radius: 10px;
+  padding: 6px;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ticket-menu[hidden] { display: none; }
+
+.ticket-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  padding: 9px 11px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.ticket-menu-item:hover { background: var(--bg-box-hover); }
+
+.ticket-menu-item.has-submenu[aria-expanded="true"] .ticket-chevron {
+  transform: rotate(180deg);
+}
+
+.ticket-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 2px 14px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border-box);
+  border-radius: 0;
+}
+.ticket-submenu[hidden] { display: none; }
+
+.ticket-menu-leaf {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 11px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--sage);
+  cursor: pointer;
+}
+.ticket-menu-leaf:hover { background: var(--bg-sage-soft); }
+
+/* Flip the whole list to floating panels by adding .menu-popover to #tickets-list */
+.ticket-list.menu-popover .ticket-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  margin-top: 0;
+  z-index: 50;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
 .ticket-id {
   font-size: 11px;
   color: var(--text-secondary);
