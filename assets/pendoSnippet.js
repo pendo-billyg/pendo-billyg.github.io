@@ -4,7 +4,7 @@ Reads visitor + account from localStorage so whoever's signed
 in via the BillyCRM avatar is identified to Pendo at boot.
 ============================================================ */
 
-const PENDO_API_KEY = '4298b339-33d2-49e7-87e6-dcd5b240f48c';
+//const PENDO_API_KEY = '4298b339-33d2-49e7-87e6-dcd5b240f48c';
 
 // Step 1: uncomment the loader to fetch the Pendo agent, add API key
 (function (publicAppId) {
@@ -24,7 +24,7 @@ const PENDO_API_KEY = '4298b339-33d2-49e7-87e6-dcd5b240f48c';
         z = e.getElementsByTagName(n)[0];
         z.parentNode.insertBefore(y, z);
     })(window, document, 'script', 'pendo');
-})(PENDO_API_KEY);
+})(4298b339-33d2-49e7-87e6-dcd5b240f48c);
 
 // Step 2: uncomment the initializer below. It reads from localStorage so the
 // BillyCRM auth state flows through to Pendo. If signed out, sends an
