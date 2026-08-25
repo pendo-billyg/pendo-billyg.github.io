@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: dark;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shadow DOM lab - BillyCRM</title>
+<script src="assets/pendoSnippet.js"></script>
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="shadow-lab">
+
+<div class="app">
+
+  <crm-shadow-sidebar id="lab-sidebar"></crm-shadow-sidebar>
+
+  <main class="content">
+
+    <div class="page-header">
+      <p class="page-title">Shadow DOM lab</p>
+      <div class="user-menu-container" id="user-menu-wrapper"></div>
+    </div>
+
+    <div class="lab-panel">
+      <p class="lab-heading">Scroll mode</p>
+      <select class="filter-select" id="lab-scroll-mode">
+        <option value="sidebar">Sidebar scrolls (Okta-style, default)</option>
+        <option value="page">Page scrolls</option>
+      </select>
+    </div>
+
+    <div class="lab-panel">
+      <p class="lab-heading">Last clicked element</p>
+      <pre class="lab-path" id="lab-path">Click anything in the sidebar.</pre>
+      <div class="lab-meta" id="lab-meta"></div>
+    </div>
+
+    <div class="lab-panel">
+      <p class="lab-heading">Shadow root inventory</p>
+      <div class="lab-meta" id="lab-inventory"></div>
+    </div>
+
+    <div class="lab-panel">
+      <p class="lab-heading">Notes</p>
+      <ul class="lab-notes">
+        <li>The <code>Reports</code> section uses <code>mode: 'closed'</code>. Pendo cannot see inside it.</li>
+        <li>Everything else is <code>mode: 'open'</code> and should tag normally.</li>
+        <li><code>Administrators</code> sits three shadow boundaries deep.</li>
+        <li><code>Identity governance &rarr; Lifecycle management</code> is below the fold. Scroll the sidebar to reach it.</li>
+      </ul>
+    </div>
+
+  </main>
+</div>
+
+<!-- SIGN-IN MODAL (same markup as the other pages, so pendo.identify still works here) -->
+<div class="modal-backdrop" id="signin-modal" hidden>
+  <form class="modal" id="signin-form">
+    <h3 class="modal-title">Sign in</h3>
+    <div class="form-field form-field-required">
+      <label for="si-visitor-id">Visitor ID</label>
+      <input id="si-visitor-id" name="visitorId" type="text" required autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-name">Visitor name <span class="optional">(optional)</span></label>
+      <input id="si-visitor-name" name="visitorName" type="text" autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-email">Visitor email <span class="optional">(optional)</span></label>
+      <input id="si-visitor-email" name="visitorEmail" type="email" autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-created">Visitor created at <span class="optional">(optional)</span></label>
+      <input id="si-visitor-created" name="visitorCreatedAt" type="datetime-local" />
+    </div>
+    <div class="form-field form-field-required">
+      <label for="si-account-id">Account ID</label>
+      <input id="si-account-id" name="accountId" type="text" required autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-account-name">Account name <span class="optional">(optional)</span></label>
+      <input id="si-account-name" name="accountName" type="text" autocomplete="off" />
+    </div>
+    <div class="modal-buttons">
+      <button type="button" class="secondary" id="cancel-signin">Cancel</button>
+      <button type="submit" class="primary">Sign in</button>
+    </div>
+  </form>
+</div>
+
+<script src="assets/app.js"></script>
+<script src="assets/shadow-lab.js"></script>
+
+<div class="toast-container" id="toast-container"></div>
+
+</body>
+</html>
