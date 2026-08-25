@@ -302,7 +302,8 @@ Nested custom elements mirroring the Odyssey/Okta pattern:
 
         .brand { display: flex; align-items: center; gap: 8px; padding: 0 6px 16px; flex-shrink: 0; }
         .mark { width: 14px; height: 14px; border-radius: 3px; background: var(--sage, #8FAE8F); }
-        .name { font-size: 14px; font-weight: 500; color: var(--text-primary, #E8E6DD); }
+        .name { font-size: 14px; font-weight: 500; color: var(--text-primary, #E8E6DD); text-decoration: none; }
+        .name:hover { color: var(--sage, #8FAE8F); }
         :host([collapsed]) .name { display: none; }
         .collapse {
           margin-left: auto; background: none; border: 0; cursor: pointer;
@@ -328,7 +329,7 @@ Nested custom elements mirroring the Odyssey/Okta pattern:
       root.innerHTML = `
         <div class="brand">
           <span class="mark"></span>
-          <span class="name">BillyCRM</span>
+          <a class="name" href="dashboard.html">BillyCRM</a>
           <button class="collapse" part="collapse" aria-label="Collapse sidebar">&#10094;</button>
         </div>
         <div class="nav" id="nav"></div>`;
