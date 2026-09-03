@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: dark;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide repro - BillyCRM</title>
+<script src="assets/pendoSnippet.js"></script>
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  .repro-note {
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    opacity: 0.85;
+  }
+  .repro-warning {
+    border: 1px solid #a33;
+    background: rgba(170, 51, 51, 0.12);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  .repro-meta {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    margin-bottom: 16px;
+    line-height: 1.8;
+  }
+  .repro-meta span { opacity: 0.6; }
+  .repro-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .repro-buttons button {
+    font: inherit;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background: #2a2a2a;
+    color: inherit;
+    cursor: pointer;
+  }
+  .repro-buttons button:hover { background: #343434; }
+  .repro-buttons .primary { border-color: #4a7; }
+  .repro-buttons .danger  { border-color: #a55; }
+  .repro-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.5;
+    margin: 16px 0 6px;
+  }
+  #log {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre;
+    overflow-x: auto;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 12px 14px;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+</style>
+</head>
+<body data-page="guide-repro">
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span class="brand-name">BillyCRM</span>
+    </div>
+    <a class="nav-item" data-page="dashboard" href="dashboard.html">Dashboard</a>
+    <a class="nav-item" data-page="contacts"  href="contacts.html">Contacts</a>
+    <a class="nav-item" data-page="tickets"   href="tickets.html">Tickets</a>
+    <a class="nav-item" data-page="settings"  href="settings.html">Settings</a>
+    <a class="nav-item" data-page="shadow-lab" href="shadow-lab.html">Shadow lab</a>
+    <a class="nav-item active" data-page="guide-repro" href="guide-repro.html">Guide repro</a>
+  </aside>
+
+  <main class="content">
+
+    <div class="page-header">
+      <p class="page-title">Guide redisplay repro</p>
+      <div class="user-menu-container" id="user-menu-wrapper"></div>
+    </div>
+
+    <div class="repro-warning" id="placeholder-warning">
+      <strong>Setup needed.</strong> Open <code>assets/guide-repro.js</code> and replace
+      <code>PASTE_GUIDE_ID_HERE</code> with a real guide ID. The guide must be
+      <strong>Public</strong>, activation set to <strong>API / programmatic</strong>, and
+      targeted by a segment whose only rule is
+      <em>&lt;this guide&gt; &rarr; Not viewed &rarr; ever</em>.
+    </div>
+
+    <div class="repro-note">
+      Tests whether a guide is filtered out of the loaded payload after it has been seen,
+      and which reload path (if any) causes that to happen. The log persists across page
+      reloads, and the <code>+Ns</code> column counts from the first time the guide was shown &mdash;
+      that elapsed figure is the result worth recording.
+    </div>
+
+    <div class="repro-meta">
+      visitor&nbsp;&nbsp;<span id="visitor-id">&mdash;</span><br>
+      guide&nbsp;&nbsp;&nbsp;&nbsp;<span id="guide-id">&mdash;</span>
+    </div>
+
+    <div class="repro-label">1. Start a run</div>
+    <div class="repro-buttons">
+      <button id="btn-newvisitor" class="primary">New test visitor</button>
+      <button id="btn-show" class="primary">Show guide (showGuideById)</button>
+    </div>
+
+    <div class="repro-label">2. Dismiss or complete the guide, then try a reload path</div>
+    <div class="repro-buttons">
+      <button id="btn-reload">Full page reload</button>
+      <button id="btn-pushstate">pushState URL change</button>
+      <button id="btn-loadguides">pendo.loadGuides()</button>
+    </div>
+
+    <div class="repro-label">3. Inspect</div>
+    <div class="repro-buttons">
+      <button id="btn-check">Check payload</button>
+      <button id="btn-flush">pendo.flushNow()</button>
+      <button id="btn-clear" class="danger">Clear log</button>
+    </div>
+
+    <div class="repro-label">Log</div>
+    <pre id="log">(nothing logged yet)</pre>
+
+  </main>
+</div>
+
+<script src="assets/app.js"></script>
+<script src="assets/guide-repro.js"></script>
+</body>
+</html>
