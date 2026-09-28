@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" style="color-scheme: dark;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPA lab - BillyCRM</title>
+<script src="assets/pendoSnippet.js"></script>
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  .spa-note {
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    opacity: 0.85;
+  }
+  .spa-meta {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    margin-bottom: 16px;
+    line-height: 1.8;
+  }
+  .spa-meta span { opacity: 0.6; }
+  .spa-subnav {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid #3a3a3a;
+    margin-bottom: 18px;
+  }
+  .spa-tab {
+    font: inherit;
+    font-size: 13px;
+    padding: 8px 14px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background: none;
+    color: inherit;
+    opacity: 0.6;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .spa-tab:hover { opacity: 0.9; }
+  .spa-tab.active {
+    opacity: 1;
+    background: #2a2a2a;
+    border-color: #444;
+  }
+  .spa-view { min-height: 150px; margin-bottom: 20px; }
+  .spa-body-copy { font-size: 14px; line-height: 1.6; opacity: 0.8; max-width: 60ch; }
+  .spa-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .spa-buttons button {
+    font: inherit;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #555;
+    background: #2a2a2a;
+    color: inherit;
+    cursor: pointer;
+  }
+  .spa-buttons button:hover { background: #343434; }
+  .spa-buttons .primary { border-color: #4a7; }
+  .spa-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.5;
+    margin: 16px 0 6px;
+  }
+  #spa-log {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre;
+    overflow: auto;
+    max-height: 320px;
+    border: 1px solid #3a3a3a;
+    border-radius: 8px;
+    padding: 12px;
+    background: #1c1c1c;
+  }
+</style>
+</head>
+<body data-page="spa-lab">
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span class="brand-name">BillyCRM</span>
+    </div>
+    <a class="nav-item" data-page="dashboard" href="dashboard.html">Dashboard</a>
+    <a class="nav-item" data-page="contacts"  href="contacts.html">Contacts</a>
+    <a class="nav-item" data-page="tickets"   href="tickets.html">Tickets</a>
+    <a class="nav-item" data-page="settings"  href="settings.html">Settings</a>
+    <a class="nav-item" data-page="shadow-lab" href="shadow-lab.html">Shadow lab</a>
+    <a class="nav-item" data-page="guide-repro" href="guide-repro.html">Guide repro</a>
+    <a class="nav-item active" data-page="spa-lab" href="spa-lab.html">SPA lab</a>
+  </aside>
+
+  <main class="content">
+
+    <div class="page-header">
+      <p class="page-title">SPA lab &mdash; <span id="spa-route-title">Overview</span></p>
+      <div class="user-menu-container" id="user-menu-wrapper"></div>
+    </div>
+
+    <div class="spa-note">
+      The rest of BillyCRM is multi-page &mdash; every nav link is a full document load, so the agent
+      restarts each time. <strong>This page is not.</strong> The four tabs below swap content in place and
+      change the URL via <code>pushState</code> (or hash, if you switch the mode), so the agent loads
+      <strong>once</strong> and then sees N route changes with no reload.
+      <br><br>
+      Build the guide in Pendo as <strong>automatic, 30s delay, do not repeat</strong>, scoped to a Page rule
+      that matches <code>/spa-lab</code>. Wait for it, dismiss it, then change routes and watch the log.
+      A <code>GUIDE VISIBLE</code> line at roughly <code>+30s</code> after <em>each</em> route change is the bug:
+      every route change is starting its own delay timer.
+    </div>
+
+    <div class="spa-meta">
+      <span>url:</span> <code id="spa-url">&mdash;</code><br>
+      <span>pendo:</span> <code id="spa-agent">checking&hellip;</code>
+    </div>
+
+    <nav class="spa-subnav" id="spa-subnav">
+      <a class="spa-tab active" data-route="overview" href="#">Overview</a>
+      <a class="spa-tab" data-route="accounts" href="#">Accounts</a>
+      <a class="spa-tab" data-route="reports"  href="#">Reports</a>
+      <a class="spa-tab" data-route="billing"  href="#">Billing</a>
+    </nav>
+
+    <div class="spa-view" id="spa-view"></div>
+
+    <div class="spa-label">Controls</div>
+    <div class="spa-buttons">
+      <button class="primary" id="spa-burst">Burst: 4 route changes, 2s apart</button>
+      <button id="spa-reload">Full page reload</button>
+      <button id="spa-clear">Clear log</button>
+      <button id="spa-copy">Copy log</button>
+      <select class="filter-select" id="spa-mode">
+        <option value="push">pushState routing</option>
+        <option value="hash">hash routing</option>
+      </select>
+    </div>
+
+    <div class="spa-label">Log (survives reloads)</div>
+    <pre id="spa-log">(nothing logged yet)</pre>
+
+  </main>
+</div>
+
+<!-- SIGN-IN MODAL (same markup as the other pages, so pendo.identify still works here) -->
+<div class="modal-backdrop" id="signin-modal" hidden>
+  <form class="modal" id="signin-form">
+    <h3 class="modal-title">Sign in</h3>
+    <div class="form-field form-field-required">
+      <label for="si-visitor-id">Visitor ID</label>
+      <input id="si-visitor-id" name="visitorId" type="text" required autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-name">Visitor name <span class="optional">(optional)</span></label>
+      <input id="si-visitor-name" name="visitorName" type="text" autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-email">Visitor email <span class="optional">(optional)</span></label>
+      <input id="si-visitor-email" name="visitorEmail" type="email" autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-created">Visitor created at <span class="optional">(optional)</span></label>
+      <input id="si-visitor-created" name="visitorCreatedAt" type="datetime-local" />
+    </div>
+    <div class="form-field form-field-required">
+      <label for="si-account-id">Account ID</label>
+      <input id="si-account-id" name="accountId" type="text" required autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-account-name">Account name <span class="optional">(optional)</span></label>
+      <input id="si-account-name" name="accountName" type="text" autocomplete="off" />
+    </div>
+    <div class="modal-buttons">
+      <button type="button" class="secondary" id="cancel-signin">Cancel</button>
+      <button type="submit" class="primary">Sign in</button>
+    </div>
+  </form>
+</div>
+
+<script src="assets/app.js"></script>
+<script src="assets/spa-lab.js"></script>
+
+<div class="toast-container" id="toast-container"></div>
+
+</body>
+</html>
