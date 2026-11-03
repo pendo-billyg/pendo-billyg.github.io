@@ -1001,6 +1001,18 @@ function initSettings() {
     settings.notifications.weeklyDigest      = document.getElementById('s-weeklyDigest').checked;
     flashSaveConfirmation('notifications-save-confirmation');
   });
+
+  // Theme picker. Applies immediately with no Save button, the way OS-level
+  // pickers behave. The theme itself was already applied by theme.js in <head>;
+  // this only syncs the radios and handles changes.
+  const themeChoice = window.billycrmTheme?.get() || 'system';
+  document.querySelectorAll('input[name="theme"]').forEach(radio => {
+    radio.checked = radio.value === themeChoice;
+    radio.addEventListener('change', e => {
+      window.billycrmTheme?.set(e.target.value);
+      showToast(`Theme: ${e.target.value}`);
+    });
+  });
 }
 
 // ============================================================

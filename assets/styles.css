@@ -1,33 +1,46 @@
 :root {
-  --bg-page: #181C1A;
-  --bg-box: #1F2522;
-  --bg-box-hover: #232A26;
-  --border-box: #2A312D;
-  --text-primary: #E8E6DD;
-  --text-secondary: #7A8079;
+  /* Default = follow the OS. theme.js overrides this on <html> when the user
+     picks Light or Dark. light-dark(LIGHT, DARK) resolves against it. */
+  color-scheme: light dark;
 
-  --bg-sidebar: #141210;
-  --bg-surface: #232019;
-  --bg-surface-active: #2A2620;
-  --border: #2A2620;
-  --sidebar-text-primary: #EDE6D8;
-  --sidebar-text-secondary: #8C8074;
+  --bg-page:               light-dark(#F6F4EE, #181C1A);
+  --bg-box:                light-dark(#FFFFFF, #1F2522);
+  --bg-box-hover:          light-dark(#F1EFE8, #232A26);
+  --border-box:            light-dark(#E2DFD5, #2A312D);
+  --text-primary:          light-dark(#1F2522, #E8E6DD);
+  --text-secondary:        light-dark(#6B7069, #7A8079);
 
-  --bg-sage-soft: #2D3A2D;
-  --bg-brown-soft: #3D2E20;
-  --bg-gray-soft: #2A2A28;
-  --gray-text: #989890;
-  --sage: #8FAE8F;
-  --sage-bright: #A8C5A8;
-  --brown: #C9A57A;
-  --brown-deep: #3D2E20;
+  --bg-sidebar:            light-dark(#EDE9DF, #141210);
+  --bg-surface:            light-dark(#E4DFD3, #232019);
+  --bg-surface-active:     light-dark(#DCD6C8, #2A2620);
+  --border:                light-dark(#DCD6C8, #2A2620);
+  --sidebar-text-primary:  light-dark(#2A2620, #EDE6D8);
+  --sidebar-text-secondary: light-dark(#6E6458, #8C8074);
 
-  --bg-priority-high: #3D2424;
-  --priority-high:    #D89E8A;
-  --bg-priority-med:  #3D3520;
-  --priority-med:     #FFD908;
-  --bg-priority-low:  #2A3520;
-  --priority-low:     #B5C97A;
+  --bg-sage-soft:          light-dark(#E3ECE3, #2D3A2D);
+  --bg-brown-soft:         light-dark(#F1E6D8, #3D2E20);
+  --bg-gray-soft:          light-dark(#ECECE8, #2A2A28);
+  --gray-text:             light-dark(#6E6E68, #989890);
+
+  /* Sage and brown are used as TEXT ~23 times. The dark-mode values are only
+     ~2.3:1 contrast on a light background, so light mode uses darker versions
+     (both ~5:1). */
+  --sage:                  light-dark(#4F7A4F, #8FAE8F);
+  --sage-bright:           light-dark(#3E6A3E, #A8C5A8);  /* hover: darker in light, lighter in dark */
+  --brown:                 light-dark(#8A6232, #C9A57A);
+  --brown-deep:            light-dark(#F6F4EE, #3D2E20);  /* the dot inside the brand mark */
+
+  --bg-priority-high:      light-dark(#F6E1DC, #3D2424);
+  --priority-high:         light-dark(#A2402C, #D89E8A);
+  --bg-priority-med:       light-dark(#F7EFCF, #3D3520);
+  --priority-med:          light-dark(#7A5F00, #FFD908);
+  --bg-priority-low:       light-dark(#E8F0D8, #2A3520);
+  --priority-low:          light-dark(#4F6B1F, #B5C97A);
+
+  /* Replace the hard-coded colours that used to live below :root */
+  --avatar-hover:          light-dark(#E8D9C4, #4A382A);
+  --shadow-color:          light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.45));
+  --backdrop:              light-dark(rgba(31, 37, 34, 0.35), rgba(0, 0, 0, 0.6));
 }
 
 * { box-sizing: border-box; }
@@ -103,7 +116,7 @@ button.user-avatar,
   font-family: inherit;
   padding: 0;
 }
-button.user-avatar:hover { background: #4A382A; }
+button.user-avatar:hover { background: var(--avatar-hover); }
 
 .signin-button {
   height: 30px;
@@ -129,7 +142,7 @@ button.user-avatar:hover { background: #4A382A; }
   padding: 14px;
   width: 240px;
   z-index: 50;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  box-shadow: 0 8px 24px var(--shadow-color);
 }
 .user-menu-section { padding: 4px 0; }
 .user-menu-label {
@@ -185,7 +198,7 @@ button.user-avatar:hover { background: #4A382A; }
 .metric-value { font-size: 24px; font-weight: 500; color: var(--text-primary); line-height: 1.1; }
 .metric-trend { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
 .metric-trend.up { color: var(--sage-bright); }
-.metric-trend.down { color: #D89E8A; }
+.metric-trend.down { color: var(--priority-high); }
 
 .activity-list {
   background: var(--bg-box);
@@ -464,7 +477,7 @@ button.secondary:hover { color: var(--text-primary); background: var(--bg-box-ho
   right: 0;
   margin-top: 0;
   z-index: 50;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 24px var(--shadow-color);
 }
 
 .ticket-id {
@@ -676,7 +689,7 @@ button.secondary:hover { color: var(--text-primary); background: var(--bg-box-ho
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -755,7 +768,7 @@ button.secondary:hover { color: var(--text-primary); background: var(--bg-box-ho
   padding: 6px;
   min-width: 240px;
   z-index: 50;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 24px var(--shadow-color);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -801,7 +814,7 @@ button.secondary:hover { color: var(--text-primary); background: var(--bg-box-ho
   padding: 12px 16px;
   color: var(--text-primary);
   font-size: 13px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 24px var(--shadow-color);
   pointer-events: auto;
   min-width: 220px;
   max-width: 360px;
@@ -835,7 +848,7 @@ button.secondary:hover { color: var(--text-primary); background: var(--bg-box-ho
   border: 1px solid var(--border-box);
   font-size: 0;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 24px var(--shadow-color);
   z-index: 100;
   transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s;
   display: flex;
@@ -856,7 +869,7 @@ button.secondary:hover { color: var(--text-primary); background: var(--bg-box-ho
 .help-launcher:hover {
   background: var(--bg-box-hover);
   transform: scale(1.05);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 12px 28px var(--shadow-color);
 }
 
 .help-launcher:active {

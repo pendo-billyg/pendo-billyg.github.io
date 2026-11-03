@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" style="color-scheme: dark;">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="assets/theme.js"></script>
 <title>Settings - BillyCRM</title>
 <script src="assets/pendoSnippet.js"></script>
 <!-- Start of d3v-pendo-ts-test Zendesk Widget script -->
@@ -112,18 +113,21 @@
         </div>
       </div>
 
-      <!-- Display (informational) -->
+      <!-- Display -->
       <div class="settings-section">
         <div class="settings-section-title">Display</div>
 
         <div class="settings-row">
           <div class="settings-row-text">
             <div class="settings-row-label">Theme</div>
-            <div class="settings-row-hint">Light mode coming soon</div>
+            <div class="settings-row-hint">System follows your operating system setting</div>
           </div>
-          <div class="theme-options">
-            <label><input type="radio" name="theme" value="dark" checked /> Dark</label>
-            <label class="disabled"><input type="radio" name="theme" value="light" disabled /> Light</label>
+          <!-- No `checked` here on purpose: the saved choice lives in localStorage,
+               so initSettings() in app.js sets the checked radio on load. -->
+          <div class="theme-options" role="radiogroup" aria-label="Theme">
+            <label><input type="radio" name="theme" value="system" id="theme-system" /> System</label>
+            <label><input type="radio" name="theme" value="light"  id="theme-light"  /> Light</label>
+            <label><input type="radio" name="theme" value="dark"   id="theme-dark"   /> Dark</label>
           </div>
         </div>
       </div>
