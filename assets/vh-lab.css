@@ -30,10 +30,13 @@ body { margin:0; font: 13px/1.4 Arial, Helvetica, sans-serif; color: var(--text)
 /* Kendo-ish grid */
 .k-grid { border:1px solid var(--line); background:#fff; position:relative; }
 .k-grid.loading::after { content:'Loading…'; position:absolute; inset:0; background:rgba(255,255,255,.7); display:flex; align-items:center; justify-content:center; font-weight:700; }
-.k-grid table { width:100%; border-collapse:collapse; table-layout:fixed; }
+.k-grid table { width:100%; border-collapse:collapse; table-layout:auto; }
+.k-grid th.k-hierarchy-cell { width:60px; }
+.k-grid td:has(> .row-select), .k-grid th[data-field="Selected"] { width:36px; }
+.k-grid td.action-cell { width:110px; }
 .k-grid th.k-header { background:#c9daec; text-align:left; font-weight:400; padding:7px 8px; border-left:1px solid var(--line); white-space:nowrap; }
 .k-grid th.k-header[data-sortable] { cursor:pointer; color:#0b3d73; }
-.k-grid td { padding:9px 8px; border-left:1px solid var(--line); border-top:1px solid #e3e9f0; vertical-align:middle; overflow:hidden; }
+.k-grid td { padding:9px 8px; border-left:1px solid var(--line); border-top:1px solid #e3e9f0; vertical-align:middle; }
 .k-grid tr.k-alt td { background:#eef3f9; }
 .k-hierarchy-cell a { text-decoration:none; color:#555; font-size:11px; display:inline-block; padding:2px 6px; }
 .k-detail-row td { background:#f8fafc; }
@@ -57,3 +60,5 @@ a.lnkPatientName:hover { text-decoration:underline; }
 .patient-header { background:#fff; border:1px solid var(--line); padding:10px 14px; margin-bottom:14px; display:flex; gap:24px; flex-wrap:wrap; }
 .record-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px 24px; padding:14px; }
 .record-grid span { display:block; color:#555; font-size:12px; }
+.holds-subgrid { margin-top:8px; }
+.holds-subgrid td, .holds-subgrid th { background:#fff !important; }

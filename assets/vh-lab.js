@@ -18,7 +18,7 @@ Pendo element targeting and code-block advance behaviour:
   // ---------- lab settings (persisted per browser) ----------
   const LAB_KEY = 'billycrm-vh-lab';
   function loadLab() {
-    try { return Object.assign({ mount: 'create', delay: 800, linkTarget: '_blank' }, JSON.parse(localStorage.getItem(LAB_KEY) || '{}')); }
+    try { return Object.assign({ mount: 'create', delay: 800, linkTarget: '_blank', autoExpand: true }, JSON.parse(localStorage.getItem(LAB_KEY) || '{}')); }
     catch (e) { return { mount: 'create', delay: 800, linkTarget: '_blank' }; }
   }
   function saveLab(s) { try { localStorage.setItem(LAB_KEY, JSON.stringify(s)); } catch (e) {} }
@@ -36,6 +36,9 @@ Pendo element targeting and code-block advance behaviour:
     { id: 'p-20261013', name: 'DONOTTOUCHTESTPATIENT, PatientHeaderHHTestPatient', mrn: '20261013173816', payor: 'ZZ Medicare HMO ZZ', plan: 'Aetna Health', careLocation: 'Home', loc: 'Inpatient Respite' }
   ];
   const byId = Object.fromEntries(PATIENTS.map(p => [p.id, p]));
+  // Badge in the customer's guide targets:
+  // [role="gridcell"]:contains("Care Location/LOC Mismatch: Type and Location in the Personal Info > Care Location screen does not match the LOC & Code in the")
+  const HOLD_TEXT = 'Care Location/LOC Mismatch: Type and Location in the Personal Info > Care Location screen does not match the LOC & Code in the Daily Charges screen.';
 
   function uid() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }); }
   const HOLDS = [];
@@ -75,6 +78,9 @@ Pendo element targeting and code-block advance behaviour:
     // lab controls
     document.querySelectorAll('input[name="mount"]').forEach(r => { r.checked = r.value === lab.mount; r.addEventListener('change', () => { lab.mount = r.value; saveLab(lab); }); });
     document.querySelectorAll('input[name="linkTarget"]').forEach(r => { r.checked = r.value === lab.linkTarget; r.addEventListener('change', () => { lab.linkTarget = r.value; saveLab(lab); }); });
+    const autoEx = document.getElementById('labAutoExpand');
+    autoEx.checked = !!lab.autoExpand;
+    autoEx.addEventListener('change', () => { lab.autoExpand = autoEx.checked; saveLab(lab); });
     const delayInput = document.getElementById('labDelay');
     delayInput.value = lab.delay;
     delayInput.addEventListener('change', () => { lab.delay = Math.max(0, +delayInput.value || 0); saveLab(lab); });
@@ -85,7 +91,7 @@ Pendo element targeting and code-block advance behaviour:
         '<div class="grid-toolbar"><button type="button" class="k-button k-primary" id="btnProcessNoCharge">Process No Charge</button></div>' +
         '<div class="k-widget k-grid" data-form="validationHoldForm" id="validationHoldKendoGrid" data-role="grid" data-onvisible="validationHoldKendoGridHandleVisible">' +
           '<table role="treegrid">' +
-            '<colgroup><col class="k-hierarchy-col" style="width:45px"><col style="width:1%"><col style="width:1%"><col style="width:1%"><col style="width:40px"><col><col style="width:150px"><col style="width:110px"><col style="width:110px"><col style="width:120px"><col style="width:90px"><col style="width:40px"><col style="width:100px"></colgroup>' +
+            '<colgroup><col class="k-hierarchy-col" style="width:45px"><col style="width:1%"><col><col><col><col><col><col><col><col><col><col style="width:30px"><col></colgroup>' +
             '<thead class="k-grid-header" role="rowgroup"><tr>' +
               '<th class="k-hierarchy-cell k-header" scope="col">Expand</th>' +
               '<th class="k-header" style="display:none" data-field="HoldId" data-index="0" scope="col"></th>' +
@@ -151,14 +157,34 @@ Pendo element targeting and code-block advance behaviour:
         '</tr>';
       }).join('');
 
+      if (loadLab().autoExpand) { const first = tbody.querySelector('tr.k-master-row'); if (first) expandRow(first); }
+
       grid.querySelector('#sortArrow').textContent = state.sortDir === 'desc' ? '▼' : '▲';
 
       const pager = grid.querySelector('#vhPager');
       let btns = '';
-      for (let n = 1; n <= pages; n++) btns += '<button type="button" data-page="' + n + '"' + (n === state.page ? ' class="current"' : '') + '>' + n + '</button>';
+      for (let n = 1; n <= pages; n++) btns += '<button type="button" data-pg="' + n + '"' + (n === state.page ? ' class="current"' : '') + '>' + n + '</button>';
       pager.innerHTML = btns + '<span>' + state.pageSize + ' items per page</span><span class="info">' +
         (sorted.length ? ((state.page - 1) * state.pageSize + 1) + ' - ' + Math.min(state.page * state.pageSize, sorted.length) : 0) + ' of ' + sorted.length + ' items</span>' +
         '<button type="button" data-refresh title="Refresh">&#8635;</button>';
+    }
+
+    function detailRow(tr) {
+      const h = state.rows.find(r => r.uid === tr.dataset.uid); const p = byId[h.patientId];
+      const d = document.createElement('tr');
+      d.className = 'k-detail-row';
+      d.innerHTML = '<td class="k-hierarchy-cell"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td>' +
+        '<td class="k-detail-cell" colspan="9"><div class="detail-card"><span><b>MRN:</b> ' + esc(p.mrn) + '</span><span><b>Care Location:</b> ' + esc(p.careLocation) + '</span><span><b>Level of Care:</b> ' + esc(p.loc) + '</span></div>' +
+        '<div class="k-widget k-grid holds-subgrid" data-role="grid"><table role="grid"><thead class="k-grid-header" role="rowgroup"><tr><th class="k-header" scope="col">Hold</th><th class="k-header" scope="col" style="width:120px">Hold Date</th></tr></thead>' +
+        '<tbody role="rowgroup"><tr class="k-master-row" role="row"><td role="gridcell">' + esc(HOLD_TEXT) + '</td><td role="gridcell">' + fmt(h.eventDate) + '</td></tr></tbody></table></div></td>';
+      return d;
+    }
+
+    function expandRow(tr) {
+      const ex = tr.querySelector('[data-expand]');
+      const next = tr.nextElementSibling;
+      if (next && next.classList.contains('k-detail-row')) return;
+      tr.after(detailRow(tr)); ex.innerHTML = '&#9660;';
     }
 
     function wireGrid(wrap) {
@@ -166,7 +192,7 @@ Pendo element targeting and code-block advance behaviour:
       wrap.addEventListener('click', e => {
         const t = e.target;
         if (t.closest('[data-sortable]')) { state.sortDir = state.sortDir === 'desc' ? 'asc' : 'desc'; renderBody(); return; }
-        const pg = t.closest('[data-page]'); if (pg) { state.page = +pg.dataset.page; renderBody(); return; }
+        const pg = t.closest('[data-pg]'); if (pg) { state.page = +pg.dataset.pg; renderBody(); return; }
         if (t.closest('[data-refresh]')) { renderBody(); return; }
         const ex = t.closest('[data-expand]');
         if (ex) {
@@ -174,10 +200,7 @@ Pendo element targeting and code-block advance behaviour:
           const tr = ex.closest('tr');
           const next = tr.nextElementSibling;
           if (next && next.classList.contains('k-detail-row')) { next.remove(); ex.innerHTML = '&#9654;'; return; }
-          const h = state.rows.find(r => r.uid === tr.dataset.uid); const p = byId[h.patientId];
-          const d = document.createElement('tr');
-          d.className = 'k-detail-row';
-          d.innerHTML = '<td class="k-hierarchy-cell"></td><td style="display:none"></td><td style="display:none"></td><td style="display:none"></td><td colspan="9"><div class="detail-card"><span><b>MRN:</b> ' + esc(p.mrn) + '</span><span><b>Care Location:</b> ' + esc(p.careLocation) + '</span><span><b>Level of Care:</b> ' + esc(p.loc) + '</span><span><b>Admission:</b> ' + h.admissionId + '</span></div></td>';
+          const d = detailRow(tr);
           tr.after(d); ex.innerHTML = '&#9660;';
           return;
         }
