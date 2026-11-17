@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validation Hold - BillyCRM</title>
+<script src="assets/pendoSnippet.js"></script>
+<link rel="stylesheet" href="assets/vh-lab.css">
+</head>
+<body data-page="validation-hold">
+
+<header class="mc-topbar">
+  <a class="mc-brand" href="dashboard.html">BillyCRM <span>Validation Hold lab</span></a>
+  <nav class="mc-tabs">
+    <a href="#">Task Hotlist</a>
+    <a href="patient-record.html">Patient Record</a>
+    <a href="#">Patient Admin</a>
+    <a class="active" href="validation-hold.html">Billing AR</a>
+    <a href="#">Scheduling</a>
+  </nav>
+</header>
+
+<div class="mc-layout">
+  <aside class="mc-sidebar">
+    <a href="#">Holds Setup</a>
+    <a href="#">Contractual Rules</a>
+    <a href="#">Billing Codes</a>
+    <a class="active" href="validation-hold.html">Validation Hold</a>
+    <a href="#">Claims Hold</a>
+    <a href="#">Claim Errors</a>
+    <a href="dashboard.html">&larr; Back to BillyCRM</a>
+  </aside>
+
+  <main class="mc-content">
+    <h1 class="mc-title">Validation Hold</h1>
+    <input type="hidden" id="PageName" name="PageName" value="ValidationHold">
+
+    <div class="panel">
+      <div class="panel-header">Search</div>
+      <form class="filterpanel" id="validationHoldForm">
+        <div class="row-actions">
+          <button type="submit" class="k-button k-primary" id="btnSearch">Search</button>
+          <button type="button" class="k-button k-primary" id="btnClear">Clear</button>
+        </div>
+        <label>Event Date From <input type="date" id="EventDateFrom"></label>
+        <label>Event Date To <input type="date" id="EventDateTo"></label>
+        <label>Billing Group
+          <select id="BillingGroup"><option value="">[Please Select]</option><option>Hospice</option><option>Home Health</option></select>
+        </label>
+        <label>Patient <input type="text" id="PatientFilter" placeholder="Type part of a patient name (blank = all)"></label>
+      </form>
+      <div class="panel-subheader">Billing Group Filters &#9662;</div>
+    </div>
+
+    <div id="gridHost"><p class="empty-note">Run a search to load holds.</p></div>
+  </main>
+</div>
+
+<details class="lab-controls">
+  <summary>Lab controls</summary>
+  <p>Grid mount mode:
+    <label><input type="radio" name="mount" value="create" checked> created on Search (not in DOM before)</label>
+    <label><input type="radio" name="mount" value="hide"> in DOM but hidden until Search</label>
+  </p>
+  <p>Simulated fetch delay (ms): <input type="number" id="labDelay" value="800" min="0" step="100"></p>
+  <p>Patient link opens record in:
+    <label><input type="radio" name="linkTarget" value="_blank" checked> new tab</label>
+    <label><input type="radio" name="linkTarget" value="_self"> same tab</label>
+  </p>
+  <p class="lab-hint">Settings are saved in this browser. Grid id <code>#validationHoldKendoGrid</code>, links <code>a.lnkPatientName</code>.</p>
+</details>
+
+<script src="assets/vh-lab.js"></script>
+</body>
+</html>

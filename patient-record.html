@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Record - BillyCRM</title>
+<script src="assets/pendoSnippet.js"></script>
+<link rel="stylesheet" href="assets/vh-lab.css">
+</head>
+<body data-page="patient-record">
+
+<header class="mc-topbar">
+  <a class="mc-brand" href="dashboard.html">BillyCRM <span>Validation Hold lab</span></a>
+  <nav class="mc-tabs">
+    <a href="#">Task Hotlist</a>
+    <a class="active" href="patient-record.html">Patient Record</a>
+    <a href="#">Patient Admin</a>
+    <a href="validation-hold.html">Billing AR</a>
+    <a href="#">Scheduling</a>
+  </nav>
+</header>
+
+<div class="mc-layout">
+  <aside class="mc-sidebar">
+    <a class="active" href="#">Face Sheet</a>
+    <a href="#">Admission</a>
+    <a href="#" id="navCareLocation">Care Location</a>
+    <a href="#">Level of Care</a>
+    <a href="validation-hold.html">&larr; Validation Hold</a>
+  </aside>
+
+  <main class="mc-content">
+    <h1 class="mc-title" id="patientName">Patient Record</h1>
+    <div class="patient-header" id="patientHeader"></div>
+
+    <div class="panel">
+      <div class="panel-header">Admission details</div>
+      <div class="record-grid">
+        <div><span>Care Location</span><strong id="careLocation">&mdash;</strong></div>
+        <div><span>Level of Care (LOC)</span><strong id="levelOfCare">&mdash;</strong></div>
+        <div><span>Admission ID</span><strong id="admissionId">&mdash;</strong></div>
+        <div><span>Payor</span><strong id="payor">&mdash;</strong></div>
+      </div>
+      <div class="row-actions left">
+        <button class="k-button k-primary" id="btnEditCareLocation">Edit Care Location</button>
+        <button class="k-button" id="btnEditLoc">Edit Level of Care</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/vh-lab.js"></script>
+</body>
+</html>

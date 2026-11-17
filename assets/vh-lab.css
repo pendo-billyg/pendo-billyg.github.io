@@ -1,0 +1,59 @@
+/* Validation Hold lab — a MatrixCare-style replica of a Kendo hierarchy grid,
+   for reproducing ticket 240607 (advance on element click with many matches). */
+:root { color-scheme: light; --blue:#1f5c99; --blue-light:#dde8f4; --line:#c7d4e2; --text:#222; }
+* { box-sizing: border-box; }
+body { margin:0; font: 13px/1.4 Arial, Helvetica, sans-serif; color: var(--text); background:#f3f3f3; }
+.mc-topbar { display:flex; align-items:center; gap:24px; background:#fff; border-bottom:2px solid #ddd; padding:0 16px; height:56px; }
+.mc-brand { font-weight:700; color:#0b3d73; text-decoration:none; font-size:16px; }
+.mc-brand span { color:#e2702a; font-weight:400; margin-left:8px; font-size:13px; }
+.mc-tabs { display:flex; gap:4px; margin-left:auto; margin-right:auto; }
+.mc-tabs a { padding:18px 12px 15px; color:#333; text-decoration:none; border-bottom:3px solid transparent; }
+.mc-tabs a.active { background:#eee; border-bottom-color:#e2702a; }
+.mc-layout { display:flex; min-height:calc(100vh - 56px); }
+.mc-sidebar { width:220px; flex:none; padding:8px; background:#e9e9e9; }
+.mc-sidebar a { display:block; padding:7px 10px; margin-bottom:3px; background:#fff; color:#222; text-decoration:none; }
+.mc-sidebar a.active { background:var(--blue); color:#fff; }
+.mc-content { flex:1; min-width:0; padding:12px 16px 40px; }
+.mc-title { color:#0b3d73; font-size:19px; margin:6px 0 14px; }
+.panel { background:var(--blue-light); border:1px solid var(--line); margin-bottom:14px; }
+.panel-header, .panel-subheader { padding:7px 12px; border-bottom:1px solid var(--line); background:#d3e1ef; }
+.panel-subheader { border-top:1px solid var(--line); border-bottom:none; }
+.filterpanel { display:grid; grid-template-columns:1fr; gap:8px; padding:10px 14px 14px; max-width:780px; margin-left:auto; }
+.filterpanel label { display:grid; grid-template-columns:130px 1fr; align-items:center; font-weight:700; gap:10px; text-align:right; }
+.filterpanel input, .filterpanel select { font:inherit; padding:4px 6px; border:1px solid #bbb; background:#fff; text-align:left; font-weight:400; }
+.row-actions { display:flex; justify-content:flex-end; gap:6px; }
+.row-actions.left { justify-content:flex-start; padding:0 14px 14px; }
+.k-button { font:inherit; padding:6px 12px; border:1px solid #9bb; background:#fff; cursor:pointer; border-radius:2px; }
+.k-button.k-primary { background:var(--blue); color:#fff; border-color:var(--blue); }
+.empty-note { color:#777; padding:8px 2px; }
+.grid-toolbar { display:flex; justify-content:flex-end; padding:8px; background:var(--blue-light); border:1px solid var(--line); border-bottom:none; }
+/* Kendo-ish grid */
+.k-grid { border:1px solid var(--line); background:#fff; position:relative; }
+.k-grid.loading::after { content:'Loading…'; position:absolute; inset:0; background:rgba(255,255,255,.7); display:flex; align-items:center; justify-content:center; font-weight:700; }
+.k-grid table { width:100%; border-collapse:collapse; table-layout:fixed; }
+.k-grid th.k-header { background:#c9daec; text-align:left; font-weight:400; padding:7px 8px; border-left:1px solid var(--line); white-space:nowrap; }
+.k-grid th.k-header[data-sortable] { cursor:pointer; color:#0b3d73; }
+.k-grid td { padding:9px 8px; border-left:1px solid var(--line); border-top:1px solid #e3e9f0; vertical-align:middle; overflow:hidden; }
+.k-grid tr.k-alt td { background:#eef3f9; }
+.k-hierarchy-cell a { text-decoration:none; color:#555; font-size:11px; display:inline-block; padding:2px 6px; }
+.k-detail-row td { background:#f8fafc; }
+.detail-card { display:grid; grid-template-columns:repeat(3, auto); gap:4px 24px; padding:4px 0; }
+a.lnkPatientName { color:#2b62b5; text-decoration:none; }
+a.lnkPatientName:hover { text-decoration:underline; }
+.info-icon { display:inline-flex; width:18px; height:18px; border:1.5px solid #444; border-radius:50%; align-items:center; justify-content:center; font-size:11px; font-weight:700; cursor:help; }
+.actions-wrap { position:relative; }
+.actions-btn { background:var(--blue); color:#fff; border:none; padding:6px 10px; cursor:pointer; border-radius:2px; font:inherit; }
+.actions-menu { position:absolute; right:0; top:100%; background:#fff; border:1px solid #bbb; z-index:5; min-width:150px; box-shadow:0 2px 6px rgba(0,0,0,.2); }
+.actions-menu button { display:block; width:100%; text-align:left; border:none; background:none; padding:7px 10px; font:inherit; cursor:pointer; }
+.actions-menu button:hover { background:var(--blue-light); }
+.k-pager { display:flex; align-items:center; gap:6px; padding:8px; background:#c9daec; border-top:1px solid var(--line); }
+.k-pager button { font:inherit; border:1px solid #9ab; background:#fff; padding:3px 9px; cursor:pointer; }
+.k-pager button.current { background:var(--blue); color:#fff; }
+.k-pager .info { margin-left:auto; }
+.lab-controls { position:fixed; right:12px; bottom:12px; background:#fffbe6; border:1px solid #d9c45a; padding:6px 12px; max-width:420px; font-size:12px; z-index:50; }
+.lab-controls summary { cursor:pointer; font-weight:700; }
+.lab-controls label { display:block; margin-left:8px; }
+.lab-hint { color:#555; }
+.patient-header { background:#fff; border:1px solid var(--line); padding:10px 14px; margin-bottom:14px; display:flex; gap:24px; flex-wrap:wrap; }
+.record-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px 24px; padding:14px; }
+.record-grid span { display:block; color:#555; font-size:12px; }
