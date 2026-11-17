@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="assets/theme.js"></script>
+<title>Backdrop lab - BillyCRM</title>
+<script src="assets/pendoSnippet.js"></script>
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+  /* Ticket 240974 repro: rounded cards + Pendo backdrop "Show target element above backdrop" */
+  .lab-panel { background: var(--bg-box); border: 1px solid var(--border-box); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+  .lab-heading { margin: 0 0 8px; font-weight: 600; font-size: 14px; }
+  .bd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    margin-top: 16px;
+  }
+  .bd-card {
+    border-radius: 24px;              /* matches the customer's component radius */
+    overflow: hidden;
+    background: var(--bg-box);
+    border: 1px solid var(--border-box);
+    min-height: 240px;
+    position: relative;
+  }
+  /* Photo-style card, like the "Me" card in the customer's screenshot */
+  #bd-card-photo {
+    background: linear-gradient(160deg, #6fa8dc 0%, #6fa8dc 35%, #7a9a4a 36%, #4f6b2a 100%);
+    border: none;
+    color: #fff;
+    min-height: 320px;
+  }
+  #bd-card-photo .bd-title {
+    position: absolute; top: 20px; left: 20px;
+    font-size: 26px; font-weight: 600;
+  }
+  #bd-card-photo .bd-chips {
+    position: absolute; bottom: 16px; right: 16px; display: flex; gap: 8px;
+  }
+  #bd-card-photo .bd-chip {
+    background: rgba(255,255,255,0.75); color: #222;
+    border-radius: 999px; padding: 4px 12px; font-size: 14px;
+  }
+  .bd-card-body { padding: 24px; }
+  .bd-card-body h3 { margin: 0 0 8px; font-size: 18px; }
+  .bd-card-body p  { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
+  #bd-card-dark { background: #232323; border: none; color: #eee; }
+  #bd-card-dark p { color: #aaa; }
+  .bd-controls { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+  .bd-controls code { font-size: 12px; }
+</style>
+<!-- Workaround CSS, only injected when the toggle below is ticked -->
+<style id="bd-workaround" media="not all">
+  ._pendo-backdrop,
+  [class*="pendo-backdrop"],
+  [id*="pendo-backdrop"] {
+    background: transparent !important;
+  }
+  #bd-card-photo {
+    z-index: 200001;
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
+  }
+</style>
+</head>
+<body data-page="backdrop-lab">
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span class="brand-name">BillyCRM</span>
+    </div>
+    <a class="nav-item" data-page="dashboard" href="dashboard.html">Dashboard</a>
+    <a class="nav-item" data-page="contacts"  href="contacts.html">Contacts</a>
+    <a class="nav-item" data-page="tickets"   href="tickets.html">Tickets</a>
+    <a class="nav-item" data-page="settings"  href="settings.html">Settings</a>
+    <a class="nav-item" data-page="shadow-lab" href="shadow-lab.html">Shadow lab</a>
+    <a class="nav-item" data-page="guide-repro" href="guide-repro.html">Guide repro</a>
+    <a class="nav-item" data-page="spa-lab" href="spa-lab.html">SPA lab</a>
+    <a class="nav-item active" data-page="backdrop-lab" href="backdrop-lab.html">Backdrop lab</a>
+  </aside>
+
+  <main class="content">
+
+    <div class="page-header">
+      <p class="page-title">Backdrop lab</p>
+      <div class="user-menu-container" id="user-menu-wrapper"></div>
+    </div>
+
+    <div class="lab-panel">
+      <p class="lab-heading">Ticket 240974: rounded target vs square backdrop cutout</p>
+      <div class="bd-controls">
+        <label><input type="checkbox" id="bd-toggle"> Apply workaround CSS on this page</label>
+        <span>Targets <code>#bd-card-photo</code> only. Normally this CSS goes in the guide step&#39;s code block.</span>
+      </div>
+    </div>
+
+    <div class="bd-grid">
+      <div class="bd-card" id="bd-card-photo">
+        <div class="bd-title">Me</div>
+        <div class="bd-chips"><span class="bd-chip">363</span><span class="bd-chip">204</span></div>
+      </div>
+      <div class="bd-card" id="bd-card-light">
+        <div class="bd-card-body">
+          <h3>Recognition</h3>
+          <p>Light card on a light page. The square corners blend in here, which is a useful contrast with the other two.</p>
+        </div>
+      </div>
+      <div class="bd-card" id="bd-card-dark">
+        <div class="bd-card-body">
+          <h3>Team activity</h3>
+          <p>Dark card on a light page. The uncovered corners should be very obvious here.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- SIGN-IN MODAL (same markup as the other pages, so pendo.identify still works here) -->
+<div class="modal-backdrop" id="signin-modal" hidden>
+  <form class="modal" id="signin-form">
+    <h3 class="modal-title">Sign in</h3>
+    <div class="form-field form-field-required">
+      <label for="si-visitor-id">Visitor ID</label>
+      <input id="si-visitor-id" name="visitorId" type="text" required autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-name">Visitor name <span class="optional">(optional)</span></label>
+      <input id="si-visitor-name" name="visitorName" type="text" autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-email">Visitor email <span class="optional">(optional)</span></label>
+      <input id="si-visitor-email" name="visitorEmail" type="email" autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-visitor-created">Visitor created at <span class="optional">(optional)</span></label>
+      <input id="si-visitor-created" name="visitorCreatedAt" type="datetime-local" />
+    </div>
+    <div class="form-field form-field-required">
+      <label for="si-account-id">Account ID</label>
+      <input id="si-account-id" name="accountId" type="text" required autocomplete="off" />
+    </div>
+    <div class="form-field">
+      <label for="si-account-name">Account name <span class="optional">(optional)</span></label>
+      <input id="si-account-name" name="accountName" type="text" autocomplete="off" />
+    </div>
+    <div class="modal-buttons">
+      <button type="button" class="secondary" id="cancel-signin">Cancel</button>
+      <button type="submit" class="primary">Sign in</button>
+    </div>
+  </form>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+  document.getElementById('bd-toggle').addEventListener('change', function (e) {
+    document.getElementById('bd-workaround').media = e.target.checked ? 'all' : 'not all';
+  });
+</script>
+
+<div class="toast-container" id="toast-container"></div>
+
+</body>
+</html>
